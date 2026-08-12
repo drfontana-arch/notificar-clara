@@ -1,11 +1,12 @@
 'use client'
 import { useState } from 'react'
-import { TIPOS_ACTO } from '@/lib/prompts/index.js'
+import { TIPOS_ACTO, TIPOS_DESTINATARIO } from '@/lib/prompts/index.js'
 
 export default function PanelOperador() {
   const [form, setForm] = useState({
     texto_original: '',
     tipo_acto: 'testimonial',
+    tipo_destinatario: 'actor',
     organo_emisor: '',
     organo_whatsapp: '',
     abogado_nombre: '',
@@ -67,6 +68,26 @@ export default function PanelOperador() {
                 <option key={t.value} value={t.value}>{t.label}</option>
               ))}
             </select>
+          </div>
+
+          {/* Tipo de destinatario */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">
+              Destinatario de la notificación *
+            </label>
+            <select
+              name="tipo_destinatario"
+              value={form.tipo_destinatario}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-judicial-claro"
+            >
+              {TIPOS_DESTINATARIO.map((t) => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </select>
+            {(form.tipo_destinatario === 'letrado' || form.tipo_destinatario === 'perito') && (
+              <p className="text-xs text-amber-600 mt-1">⚠️ Para este destinatario solo se generará el triage de urgencia, sin explicación en lenguaje claro.</p>
+            )}
           </div>
 
           {/* Texto de la notificación */}

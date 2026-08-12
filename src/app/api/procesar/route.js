@@ -10,6 +10,7 @@ export async function POST(request) {
     const {
       texto_original,
       tipo_acto,
+      tipo_destinatario,
       organo_emisor,
       organo_whatsapp,
       abogado_nombre,
@@ -25,9 +26,10 @@ export async function POST(request) {
     }
 
     // 1. Procesar con IA
-    const datos = await procesarNotificacion(texto_original, tipo_acto)
+    const datos = await procesarNotificacion(texto_original, tipo_acto, tipo_destinatario || 'actor')
 
     // Enriquecer con datos del formulario
+    datos.tipo_destinatario = tipo_destinatario || 'actor'
     datos.organo_emisor = organo_emisor || ''
     datos.organo_whatsapp = organo_whatsapp || ''
     datos.abogado_nombre = abogado_nombre || ''
