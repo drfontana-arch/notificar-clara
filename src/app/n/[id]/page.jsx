@@ -206,16 +206,18 @@ export default function PaginaCiudadano() {
 
       <div className="max-w-lg mx-auto px-4 pt-6">
         {/* Video de Clara */}
-        <div className="rounded-xl overflow-hidden mb-4 shadow">
-          <div className="relative w-full" style={{paddingTop: '56.25%'}}>
-            <iframe
-              src="https://drive.google.com/file/d/1izDkfcYIj9WzttgWZG7PTHjNvvpMx8EM/preview"
-              className="absolute top-0 left-0 w-full h-full"
-              allow="autoplay"
-              allowFullScreen
-            />
+        <a
+          href="https://drive.google.com/file/d/1izDkfcYIj9WzttgWZG7PTHjNvvpMx8EM/view"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`flex items-center gap-3 rounded-xl px-4 py-3 mb-4 shadow text-sm font-semibold transition-colors ${altoContraste ? 'bg-gray-800 text-white' : 'bg-blue-900 text-white hover:bg-blue-800'}`}
+        >
+          <span className="text-2xl">▶</span>
+          <div>
+            <p className="font-bold">Ver explicación en video</p>
+            <p className="text-blue-200 text-xs font-normal">Clara le explica esta notificación paso a paso</p>
           </div>
-        </div>
+        </a>
         <div className={`rounded-xl p-4 mb-4 ${altoContraste ? 'bg-gray-800' : 'bg-white shadow'}`}>
           <p className="text-xs font-semibold uppercase tracking-wide mb-1 text-blue-600">{d.tipo_acto}</p>
           <h2 className={`text-lg font-bold ${altoContraste ? 'text-white' : 'text-blue-900'}`}>{d.titulo_explicacion}</h2>
