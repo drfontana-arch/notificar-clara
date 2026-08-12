@@ -30,12 +30,20 @@ Devolvé siempre un objeto JSON con esta estructura exacta:
     "numero_causa": "número de causa (si figura)"
   },
   "es_primera_notificacion_imputado": false,
+  "nivel_urgencia": "rojo|amarillo|verde",
+  "motivo_urgencia": "breve explicación del nivel de urgencia asignado",
   "preguntas_frecuentes": [
     { "pregunta": "...", "respuesta": "..." },
     { "pregunta": "...", "respuesta": "..." },
     { "pregunta": "...", "respuesta": "..." }
   ]
 }
+
+REGLAS PARA nivel_urgencia:
+- "rojo": hay una fecha límite en menos de 5 días, o es una sentencia penal con condena, o afecta la libertad de la persona.
+- "amarillo": hay una fecha límite entre 5 y 15 días, o implica obligaciones económicas urgentes (alimentos, embargos).
+- "verde": no hay fecha límite inminente o el acto es meramente informativo.
+Siempre incluí una frase corta en motivo_urgencia explicando por qué asignaste ese nivel.
 `
 
 export const PROMPTS_POR_TIPO = {

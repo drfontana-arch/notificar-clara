@@ -18,18 +18,25 @@ function PrimerNotificacionPanel() {
   )
 }
 
+function urgenciaLabel(nivel) {
+  if (nivel === 'rojo') return '🔴 URGENTE'
+  if (nivel === 'amarillo') return '🟡 IMPORTANTE'
+  return '🟢 Sin urgencia inmediata'
+}
+
 function ContactoButtons({ datos }) {
   const buildWALink = (numero, mensaje) => {
     const num = numero.replace(/\D/g, '')
     return `https://wa.me/${num}?text=${encodeURIComponent(mensaje)}`
   }
+  const etiqueta = urgenciaLabel(datos.nivel_urgencia)
 
   return (
     <div className="mt-6 space-y-3">
       <h3 className="font-bold text-gray-700 text-sm">¿Necesita hablar con una persona?</h3>
       {datos.organo_whatsapp && (
         <a
-          href={buildWALink(datos.organo_whatsapp, `Hola, recibí una notificación del ${datos.organo_emisor} y tengo una consulta.`)}
+          href={buildWALink(datos.organo_whatsapp, `${etiqueta} — Causa N° ${datos.datos_clave?.numero_causa || '(sin número)'} - Resolución del ${datos.datos_clave?.fecha || '(sin fecha)'}. Recibí una notificación de ${datos.organo_emisor} y tengo una consulta sobre su contenido.`)}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-3 bg-green-600 hover:bg-green-700 text-white rounded-xl px-4 py-3 text-sm font-semibold transition-colors"
@@ -40,7 +47,7 @@ function ContactoButtons({ datos }) {
       )}
       {datos.abogado_whatsapp && (
         <a
-          href={buildWALink(datos.abogado_whatsapp, `Hola ${datos.abogado_nombre || ''}, recibí una notificación y quisiera consultarle.`)}
+          href={buildWALink(datos.abogado_whatsapp, `${etiqueta} — Causa N° ${datos.datos_clave?.numero_causa || '(sin número)'} - Resolución del ${datos.datos_clave?.fecha || '(sin fecha)'}. Hola ${datos.abogado_nombre || ''}, recibí una notificación y quisiera consultarle sobre su contenido.`)}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-3 bg-blue-800 hover:bg-blue-700 text-white rounded-xl px-4 py-3 text-sm font-semibold transition-colors"
@@ -104,16 +111,50 @@ function FAQSection({ preguntas, notifId }) {
           placeholder="Escriba su pregunta aquí..."
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
         />
-        <button
-          onClick={handlePreguntaLibre}
-          disabled={cargando || !preguntaLibre.trim()}
-          className="mt-2 bg-blue-800 hover:bg-blue-600 disabled:bg-gray-400 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
-        >
-          {cargando ? 'Buscando respuesta...' : 'Preguntar a Clara'}
-        </button>
+        <div className="mt-2 flex gap-2">
+          <button
+            onClick={handlePreguntaLibre}
+            disabled={cargando || !preguntaLibre.trim()}
+            className="flex-1 bg-blue-800 hover:bg-blue-600 disabled:bg-gray-400 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+          >
+            {cargando ? 'Buscando respuesta...' : 'Preguntar a Clara'}
+          </button>
+          <button
+            onClick={() => {
+              if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+                alert('Su navegador no soporta reconocimiento de voz. Pruebe con Chrome.')
+                return
+              }
+              const SR = window.SpeechRecognition || window.webkitSpeechRecognition
+              const recognition = new SR()
+              recognition.lang = 'es-AR'
+              recognition.onresult = (e) => setPreguntaLibre(e.results[0][0].transcript)
+              recognition.start()
+            }}
+            className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold px-3 py-2 rounded-lg border border-gray-300"
+            title="Hacer pregunta por voz"
+          >
+            🎤
+          </button>
+        </div>
         {respuesta && (
           <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-gray-800">
-            <span className="font-semibold text-blue-800">Clara responde: </span>{respuesta}
+            <div className="flex items-center justify-between mb-1">
+              <span className="font-semibold text-blue-800">Clara responde:</span>
+              <button
+                onClick={() => {
+                  const utterance = new SpeechSynthesisUtterance(respuesta)
+                  utterance.lang = 'es-AR'
+                  utterance.rate = 0.9
+                  window.speechSynthesis.cancel()
+                  window.speechSynthesis.speak(utterance)
+                }}
+                className="text-xs text-blue-600 border border-blue-300 rounded-full px-2 py-0.5 hover:bg-blue-50"
+              >
+                ▶ Escuchar
+              </button>
+            </div>
+            {respuesta}
           </div>
         )}
       </div>
@@ -164,9 +205,30 @@ export default function PaginaCiudadano() {
       </header>
 
       <div className="max-w-lg mx-auto px-4 pt-6">
+        {/* Video de Clara */}
+        <div className="rounded-xl overflow-hidden mb-4 shadow">
+          <div className="relative w-full" style={{paddingTop: '56.25%'}}>
+            <iframe
+              src="https://drive.google.com/file/d/1izDkfcYIj9WzttgWZG7PTHjNvvpMx8EM/preview"
+              className="absolute top-0 left-0 w-full h-full"
+              allow="autoplay"
+              allowFullScreen
+            />
+          </div>
+        </div>
         <div className={`rounded-xl p-4 mb-4 ${altoContraste ? 'bg-gray-800' : 'bg-white shadow'}`}>
           <p className="text-xs font-semibold uppercase tracking-wide mb-1 text-blue-600">{d.tipo_acto}</p>
           <h2 className={`text-lg font-bold ${altoContraste ? 'text-white' : 'text-blue-900'}`}>{d.titulo_explicacion}</h2>
+          {d.nivel_urgencia && (
+            <div className={`mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold ${
+              d.nivel_urgencia === 'rojo' ? 'bg-red-100 text-red-700' :
+              d.nivel_urgencia === 'amarillo' ? 'bg-yellow-100 text-yellow-700' :
+              'bg-green-100 text-green-700'
+            }`}>
+              {urgenciaLabel(d.nivel_urgencia)}
+              {d.motivo_urgencia && <span className="font-normal">— {d.motivo_urgencia}</span>}
+            </div>
+          )}
         </div>
 
         {(d.es_primera_notificacion || d.es_primera_notificacion_imputado) && <PrimerNotificacionPanel />}
@@ -184,7 +246,21 @@ export default function PaginaCiudadano() {
         )}
 
         <div className={`rounded-xl p-4 mb-4 ${altoContraste ? 'bg-gray-800' : 'bg-white shadow'}`}>
-          <p className="text-xs font-bold uppercase text-blue-600 mb-2">¿Qué significa esta notificación?</p>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-bold uppercase text-blue-600">¿Qué significa esta notificación?</p>
+            <button
+              onClick={() => {
+                const utterance = new SpeechSynthesisUtterance(d.explicacion_principal)
+                utterance.lang = 'es-AR'
+                utterance.rate = 0.9
+                window.speechSynthesis.cancel()
+                window.speechSynthesis.speak(utterance)
+              }}
+              className="flex items-center gap-1 text-xs text-blue-600 border border-blue-300 rounded-full px-3 py-1 hover:bg-blue-50"
+            >
+              ▶ Escuchar
+            </button>
+          </div>
           <div className="text-sm leading-relaxed space-y-2">
             {d.explicacion_principal?.split('\n').filter(Boolean).map((p, i) => <p key={i}>{p}</p>)}
           </div>

@@ -46,6 +46,20 @@ export async function POST(request) {
     }
 
     const respuesta = await responderPreguntaLibre(pregunta, data.datos_procesados)
+
+    // Guardar pregunta anónima para análisis (sin datos personales ni ID de notificación)
+    try {
+      const { supabaseAdmin } = await import('@/lib/supabase')
+      const db = supabaseAdmin()
+      await db.from('preguntas_anonimas').insert({
+        tipo_acto: data.datos_procesados?.tipo_acto || null,
+        pregunta: pregunta,
+        creado_en: new Date().toISOString(),
+      })
+    } catch (logErr) {
+      console.warn('No se pudo registrar pregunta anónima:', logErr.message)
+    }
+
     return NextResponse.json({ respuesta })
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 })
