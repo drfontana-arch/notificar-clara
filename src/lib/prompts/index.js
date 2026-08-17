@@ -136,6 +136,52 @@ Esta explicación está pensada para personas con discapacidad visual o baja vis
 `
 }
 
+export const PROMPTS_POR_DISCAPACIDAD = {
+  visual: `
+AJUSTE PROCEDIMENTAL — DISCAPACIDAD VISUAL:
+Esta notificación va dirigida a una persona con discapacidad visual o baja visión.
+- Redactá TODO el contenido pensando en que será leído en voz alta por un lector de pantalla o por Clara.
+- Usá frases cortas y muy directas. Evitá referencias visuales ("el botón verde", "como se ve arriba").
+- Describí cualquier dato espacial en términos verbales completos: no "allí" sino "en la planta baja del edificio principal".
+- En que_debe_hacer, describí cada paso de forma que pueda seguirse sin ver.
+- Generá instrucciones detalladas de cómo llegar al lugar indicado paso a paso desde transporte público, describiendo referencias audibles (semáforos sonoros, nombres de calles, etc.).
+`,
+  auditiva: `
+AJUSTE PROCEDIMENTAL — DISCAPACIDAD AUDITIVA:
+Esta notificación va dirigida a una persona con discapacidad auditiva o hipoacusia.
+- Toda la información debe estar completa en texto. No hay audio ni referencias sonoras.
+- Usá frases cortas, sin metáforas ni expresiones idiomáticas.
+- Privilegiá listas y estructura visual clara sobre párrafos largos.
+- Evitá referencias a "escuchar", "llamar por teléfono" u otras acciones auditivas; sustituilas por alternativas escritas o visuales.
+- En los botones de contacto, priorizá WhatsApp por mensaje escrito sobre llamadas.
+`,
+  motriz: `
+AJUSTE PROCEDIMENTAL — DISCAPACIDAD MOTRIZ:
+Esta notificación va dirigida a una persona con discapacidad motriz o dificultades de movilidad.
+- En que_debe_hacer, indicá explícitamente que la persona puede solicitar al órgano emisor que el acto se realice en planta baja, en sala accesible, o de forma remota si su condición lo requiere.
+- Generá instrucciones de accesibilidad para llegar al lugar: entrada accesible, rampa, ascensor, lugar de estacionamiento para personas con discapacidad.
+- Recordá que puede concurrir acompañada de su asistente personal o referente de confianza.
+- Indicá el número de WhatsApp del órgano como primera vía de contacto para coordinar el acceso.
+`,
+  intelectual: `
+AJUSTE PROCEDIMENTAL — DISCAPACIDAD INTELECTUAL O PSICOSOCIAL:
+Esta notificación va dirigida a una persona con discapacidad intelectual o psicosocial.
+- Usá el lenguaje más simple posible. Una sola idea por oración. Palabras de uso cotidiano.
+- Evitá completamente los tecnicismos. Si debés mencionar un término legal, explicalo inmediatamente con una analogía muy concreta.
+- En que_debe_hacer, indicá que debe ir acompañada de su persona de apoyo, familiar o referente de confianza.
+- Tono extremadamente cálido, tranquilizador y sin elementos que puedan generar ansiedad innecesaria.
+- Recordá que su sistema de apoyo es fundamental y debe estar presente en cualquier acto procesal.
+- Nota interna: se recomienda que esta notificación sea acompañada por una comunicación personalizada de una persona capacitada del equipo técnico del órgano emisor o de la Defensoría.
+`,
+}
+
+export const TIPOS_DISCAPACIDAD = [
+  { value: 'visual', label: 'Discapacidad visual' },
+  { value: 'auditiva', label: 'Discapacidad auditiva' },
+  { value: 'motriz', label: 'Discapacidad motriz' },
+  { value: 'intelectual', label: 'Discapacidad intelectual o psicosocial' },
+]
+
 export const PROMPTS_POR_DESTINATARIO = {
   letrado: `
 DESTINATARIO — LETRADO/PERITO:

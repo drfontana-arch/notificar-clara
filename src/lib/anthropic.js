@@ -1,13 +1,14 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { PROMPT_BASE, PROMPTS_POR_TIPO, PROMPTS_POR_DESTINATARIO } from './prompts/index.js'
+import { PROMPT_BASE, PROMPTS_POR_TIPO, PROMPTS_POR_DESTINATARIO, PROMPTS_POR_DISCAPACIDAD } from './prompts/index.js'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-export async function procesarNotificacion(textoOriginal, tipoActo, tipoDestinatario = 'actor') {
+export async function procesarNotificacion(textoOriginal, tipoActo, tipoDestinatario = 'actor', tipoDiscapacidad = null) {
   const promptEspecifico = PROMPTS_POR_TIPO[tipoActo] || ''
   const promptDestinatario = PROMPTS_POR_DESTINATARIO[tipoDestinatario] || ''
+  const promptDiscapacidad = tipoDiscapacidad ? (PROMPTS_POR_DISCAPACIDAD[tipoDiscapacidad] || '') : ''
 
-  const systemPrompt = PROMPT_BASE + '\n\n' + promptEspecifico + '\n\n' + promptDestinatario
+  const systemPrompt = PROMPT_BASE + '\n\n' + promptEspecifico + '\n\n' + promptDestinatario + '\n\n' + promptDiscapacidad
 
   const userMessage = `A continuación encontrás el texto de una notificación judicial bonaerense.
 Explicala en lenguaje claro siguiendo las instrucciones que recibiste.

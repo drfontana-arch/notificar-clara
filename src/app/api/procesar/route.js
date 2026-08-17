@@ -11,6 +11,9 @@ export async function POST(request) {
       texto_original,
       tipo_acto,
       tipo_destinatario,
+      tipo_discapacidad,
+      transporte_publico,
+      acceso_accesible,
       organo_emisor,
       organo_whatsapp,
       abogado_nombre,
@@ -26,10 +29,13 @@ export async function POST(request) {
     }
 
     // 1. Procesar con IA
-    const datos = await procesarNotificacion(texto_original, tipo_acto, tipo_destinatario || 'actor')
+    const datos = await procesarNotificacion(texto_original, tipo_acto, tipo_destinatario || 'actor', tipo_discapacidad || null)
 
     // Enriquecer con datos del formulario
     datos.tipo_destinatario = tipo_destinatario || 'actor'
+    datos.tipo_discapacidad = tipo_discapacidad || null
+    datos.transporte_publico = transporte_publico || ''
+    datos.acceso_accesible = acceso_accesible || ''
     datos.organo_emisor = organo_emisor || ''
     datos.organo_whatsapp = organo_whatsapp || ''
     datos.abogado_nombre = abogado_nombre || ''
