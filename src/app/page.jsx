@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { TIPOS_ACTO, TIPOS_DESTINATARIO } from '@/lib/prompts/index.js'
+import { TIPOS_ACTO, TIPOS_DESTINATARIO, TIPOS_DISCAPACIDAD } from '@/lib/prompts/index.js'
 
 export default function PanelOperador() {
   const [form, setForm] = useState({
@@ -12,6 +12,10 @@ export default function PanelOperador() {
     abogado_nombre: '',
     abogado_whatsapp: '',
     es_primera_notificacion: false,
+    tiene_discapacidad: false,
+    tipo_discapacidad: '',
+    transporte_publico: '',
+    acceso_accesible: '',
   })
   const [estado, setEstado] = useState('idle') // idle | cargando | listo | error
   const [resultado, setResultado] = useState(null)
@@ -27,10 +31,16 @@ export default function PanelOperador() {
     setEstado('cargando')
     setError('')
     try {
+      const payload = {
+        ...form,
+        tipo_discapacidad: form.tiene_discapacidad ? (form.tipo_discapacidad || null) : null,
+        transporte_publico: form.tiene_discapacidad ? form.transporte_publico : '',
+        acceso_accesible: form.tiene_discapacidad ? form.acceso_accesible : '',
+      }
       const res = await fetch('/api/procesar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
@@ -177,6 +187,81 @@ export default function PanelOperador() {
             />
             Es la primera notificación como imputado/a o demandado/a (sin defensa designada)
           </label>
+
+          {/* Ajuste razonable */}
+          <div className="border border-blue-200 rounded-lg p-4 bg-blue-50 space-y-3">
+            <label className="flex items-center gap-2 text-sm font-semibold text-blue-800 cursor-pointer">
+              <input
+                type="checkbox"
+                name="tiene_discapacidad"
+                checked={form.tiene_discapacidad}
+                onChange={handleChange}
+                className="rounded"
+              />
+              🔵 Esta notificación requiere ajuste razonable
+            </label>
+
+            {form.tiene_discapacidad && (
+              <div className="space-y-3 pl-2">
+                {/* Tipo de discapacidad */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">
+                    Tipo de discapacidad *
+                  </label>
+                  <select
+                    name="tipo_discapacidad"
+                    value={form.tipo_discapacidad}
+                    onChange={handleChange}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  >
+                    <option value="">— Seleccionar —</option>
+                    {TIPOS_DISCAPACIDAD.map((t) => (
+                      <option key={t.value} value={t.value}>{t.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Advertencia para discapacidad intelectual */}
+                {form.tipo_discapacidad === 'intelectual' && (
+                  <div className="bg-amber-50 border border-amber-300 rounded-lg p-3">
+                    <p className="text-sm text-amber-800 font-semibold">⚠️ Ajuste razonable recomendado</p>
+                    <p className="text-xs text-amber-700 mt-1">
+                      Para personas con discapacidad intelectual se recomienda que la notificación sea realizada por un/a notificador/a con formación especializada o con apoyo del equipo técnico interdisciplinario del organismo. La explicación en lenguaje claro se adaptará automáticamente.
+                    </p>
+                  </div>
+                )}
+
+                {/* Instrucciones para llegar */}
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">
+                    Transporte público para llegar al organismo
+                  </label>
+                  <input
+                    type="text"
+                    name="transporte_publico"
+                    value={form.transporte_publico}
+                    onChange={handleChange}
+                    placeholder="Ej: Colectivo línea 202 ramal A, bajada en Av. 7 y 57"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1">
+                    Acceso accesible (para personas con movilidad reducida)
+                  </label>
+                  <input
+                    type="text"
+                    name="acceso_accesible"
+                    value={form.acceso_accesible}
+                    onChange={handleChange}
+                    placeholder="Ej: Rampa en entrada lateral por calle 13, ascensor disponible"
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Submit */}
           <button

@@ -237,6 +237,7 @@ export default function PaginaCiudadano() {
   const [error, setError] = useState('')
   const [altoContraste, setAltoContraste] = useState(false)
   const [mostrarSplash, setMostrarSplash] = useState(true)
+  const [zoom, setZoom] = useState(0) // 0 = normal, 1 = grande, 2 = muy grande
 
   useEffect(() => {
     fetch(`/api/notificacion?id=${id}`)
@@ -307,31 +308,52 @@ export default function PaginaCiudadano() {
           <h1 className="text-white font-bold text-base">NotificAR Clara</h1>
           <p className="text-blue-200 text-xs">Explicación en lenguaje claro</p>
         </div>
-        {/* Alto contraste — botón grande y visible */}
-        <button
-          onClick={() => setAltoContraste(!altoContraste)}
-          className={`flex items-center gap-2 px-3 py-2 rounded-xl font-semibold text-sm border-2 transition-colors ${altoContraste ? 'bg-white text-black border-white' : 'bg-blue-800 text-white border-blue-300 hover:bg-blue-700'}`}
-        >
-          <span className="text-lg">{altoContraste ? '☀️' : '🌑'}</span>
-          <span className="hidden sm:inline">{altoContraste ? 'Modo normal' : 'Alto contraste'}</span>
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Zoom */}
+          <button
+            onClick={() => setZoom((z) => (z + 1) % 3)}
+            title="Cambiar tamaño de texto"
+            className={`flex items-center gap-1 px-3 py-2 rounded-xl font-semibold text-sm border-2 transition-colors ${altoContraste ? 'bg-gray-700 text-white border-gray-500' : 'bg-blue-800 text-white border-blue-300 hover:bg-blue-700'}`}
+          >
+            <span className="text-lg">🔍</span>
+            <span className="hidden sm:inline">{zoom === 0 ? 'A+' : zoom === 1 ? 'A++' : 'A'}</span>
+          </button>
+          {/* Alto contraste */}
+          <button
+            onClick={() => setAltoContraste(!altoContraste)}
+            className={`flex items-center gap-2 px-3 py-2 rounded-xl font-semibold text-sm border-2 transition-colors ${altoContraste ? 'bg-white text-black border-white' : 'bg-blue-800 text-white border-blue-300 hover:bg-blue-700'}`}
+          >
+            <span className="text-lg">{altoContraste ? '☀️' : '🌑'}</span>
+            <span className="hidden sm:inline">{altoContraste ? 'Normal' : 'Contraste'}</span>
+          </button>
+        </div>
       </header>
 
-      <div className="max-w-lg mx-auto px-4 pt-6">
+      <div
+        className="max-w-lg mx-auto px-4 pt-6"
+        style={{ fontSize: zoom === 1 ? '1.1rem' : zoom === 2 ? '1.22rem' : '1rem' }}
+      >
 
         <div className={`rounded-xl p-4 mb-4 ${altoContraste ? 'bg-gray-800' : 'bg-white shadow'}`}>
           <p className="text-xs font-semibold uppercase tracking-wide mb-1 text-blue-600">{d.tipo_acto}</p>
           <h2 className={`text-lg font-bold ${altoContraste ? 'text-white' : 'text-blue-900'}`}>{d.titulo_explicacion}</h2>
-          {d.nivel_urgencia && (
-            <div className={`mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold ${
-              d.nivel_urgencia === 'rojo' ? 'bg-red-100 text-red-700' :
-              d.nivel_urgencia === 'amarillo' ? 'bg-yellow-100 text-yellow-700' :
-              'bg-green-100 text-green-700'
-            }`}>
-              {urgenciaLabel(d.nivel_urgencia)}
-              {d.motivo_urgencia && <span className="font-normal">— {d.motivo_urgencia}</span>}
-            </div>
-          )}
+          <div className="mt-2 flex flex-wrap gap-2">
+            {d.nivel_urgencia && (
+              <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold ${
+                d.nivel_urgencia === 'rojo' ? 'bg-red-100 text-red-700' :
+                d.nivel_urgencia === 'amarillo' ? 'bg-yellow-100 text-yellow-700' :
+                'bg-green-100 text-green-700'
+              }`}>
+                {urgenciaLabel(d.nivel_urgencia)}
+                {d.motivo_urgencia && <span className="font-normal">— {d.motivo_urgencia}</span>}
+              </div>
+            )}
+            {d.tipo_discapacidad && (
+              <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+                🔵 Ajuste razonable
+              </div>
+            )}
+          </div>
         </div>
 
         {(d.es_primera_notificacion || d.es_primera_notificacion_imputado) && <PrimerNotificacionPanel />}
@@ -345,6 +367,34 @@ export default function PaginaCiudadano() {
               {d.datos_clave?.lugar && <div className="col-span-2"><span className="font-semibold">Lugar: </span>{d.datos_clave.lugar}</div>}
               {d.datos_clave?.numero_causa && <div className="col-span-2"><span className="font-semibold">N° de causa: </span>{d.datos_clave.numero_causa}</div>}
             </div>
+          </div>
+        )}
+
+        {/* Cómo llegar — se muestra cuando hay lugar en la notificación */}
+        {d.datos_clave?.lugar && (
+          <div className={`rounded-xl p-4 mb-4 border-l-4 border-indigo-400 ${altoContraste ? 'bg-gray-800' : 'bg-indigo-50 shadow'}`}>
+            <p className="text-xs font-bold uppercase text-indigo-700 mb-2">📍 Cómo llegar al organismo</p>
+            <p className="text-sm mb-2"><span className="font-semibold">Dirección:</span> {d.datos_clave.lugar}</p>
+            <a
+              href={`https://www.google.com/maps/search/${encodeURIComponent(d.datos_clave.lugar + ', Provincia de Buenos Aires, Argentina')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-xl mb-3"
+            >
+              🗺️ Ver en Google Maps
+            </a>
+            {d.transporte_publico && (
+              <div className="mt-2">
+                <p className="text-xs font-semibold text-indigo-700 mb-1">🚌 Transporte público:</p>
+                <p className="text-sm">{d.transporte_publico}</p>
+              </div>
+            )}
+            {d.acceso_accesible && (
+              <div className="mt-2">
+                <p className="text-xs font-semibold text-indigo-700 mb-1">♿ Acceso accesible:</p>
+                <p className="text-sm">{d.acceso_accesible}</p>
+              </div>
+            )}
           </div>
         )}
 
@@ -382,6 +432,70 @@ export default function PaginaCiudadano() {
         <div className={`rounded-xl p-4 ${altoContraste ? 'bg-gray-800' : 'bg-white shadow'}`}>
           <ContactoButtons datos={d} />
         </div>
+
+        {/* Bloque 4 — Voluntad de apelar (solo sentencias penales y cámara) */}
+        {['sentencia_penal', 'sentencia_camara', 'resolucion_penal'].includes(d.tipo_acto) && (
+          <div className={`rounded-xl p-4 mt-4 border-l-4 border-orange-400 ${altoContraste ? 'bg-gray-800' : 'bg-orange-50 shadow'}`}>
+            <p className="text-xs font-bold uppercase text-orange-700 mb-2">⚖️ ¿Quiere apelar esta resolución?</p>
+            <p className="text-sm mb-3">
+              Esta resolución puede ser apelada ante el tribunal superior. Si usted desea recurrir la decisión,
+              debe comunicarlo a través de su abogado/a o de la Defensoría Oficial.
+            </p>
+            <div className="bg-amber-100 border border-amber-300 rounded-lg p-3 mb-3">
+              <p className="text-xs text-amber-800 font-semibold">⚠️ Importante</p>
+              <p className="text-xs text-amber-700 mt-1">
+                Si fue notificado/a en persona, usted puede también manifestar verbalmente su voluntad de apelar
+                a quien le entregó la notificación, en ese mismo momento. Esto <strong>no reemplaza</strong> la
+                presentación formal que debe realizar su abogado/a dentro del plazo legal.
+              </p>
+            </div>
+            {!d.organo_whatsapp && !d.abogado_whatsapp ? (
+              <div className="bg-red-50 border border-red-300 rounded-lg p-3">
+                <p className="text-xs text-red-700 font-semibold">⚠️ No hay contacto cargado</p>
+                <p className="text-xs text-red-600 mt-1">
+                  El sistema no tiene número de WhatsApp cargado para el órgano emisor ni para su abogado/a.
+                  Consulte directamente con quien le entregó la notificación.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-xs font-semibold text-gray-600 mb-1">Comunique su voluntad de apelar por escrito:</p>
+                {d.organo_whatsapp && (
+                  <a
+                    href={`https://wa.me/${d.organo_whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(
+                      `⚖️ VOLUNTAD DE APELAR — Causa N° ${d.datos_clave?.numero_causa || '(sin número)'}. Hablo con el ${d.organo_emisor || 'órgano emisor'}: recibí la notificación de la resolución del ${d.datos_clave?.fecha || '(fecha)'} y manifiesto mi voluntad de apelar dicha resolución. Quedo a la espera de instrucciones de mi abogado/a o la Defensoría.`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 bg-orange-600 hover:bg-orange-700 text-white rounded-2xl px-5 py-3 font-semibold text-sm transition-colors shadow"
+                  >
+                    <span className="text-2xl">💬</span>
+                    <div>
+                      <p className="font-bold">Comunicar al {d.organo_emisor || 'órgano emisor'}</p>
+                      <p className="text-orange-100 text-xs font-normal">por WhatsApp</p>
+                    </div>
+                  </a>
+                )}
+                {d.abogado_whatsapp && (
+                  <a
+                    href={`https://wa.me/${d.abogado_whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(
+                      `⚖️ VOLUNTAD DE APELAR — Causa N° ${d.datos_clave?.numero_causa || '(sin número)'}. Hola ${d.abogado_nombre || ''}: recibí la notificación de la resolución del ${d.datos_clave?.fecha || '(fecha)'} y deseo apelarla. Por favor, tome las medidas procesales necesarias dentro del plazo.`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 bg-blue-800 hover:bg-blue-700 text-white rounded-2xl px-5 py-3 font-semibold text-sm transition-colors shadow"
+                  >
+                    <span className="text-2xl">⚖️</span>
+                    <div>
+                      <p className="font-bold">Avisar a mi abogado/a</p>
+                      <p className="text-blue-200 text-xs font-normal">{d.abogado_nombre || 'por WhatsApp'}</p>
+                    </div>
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         <p className="text-center text-xs text-gray-400 mt-8">NotificAR Clara — Provincia de Buenos Aires</p>
       </div>
