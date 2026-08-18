@@ -2,36 +2,56 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 
-const VIDEO_URL = 'https://drive.google.com/file/d/1izDkfcYIj9WzttgWZG7PTHjNvvpMx8EM/view'
+const VIDEO_EMBED_URL = 'https://drive.google.com/file/d/1izDkfcYIj9WzttgWZG7PTHjNvvpMx8EM/preview?autoplay=1'
+
+const SUBTITULOS = [
+  "Hola. Recibiste una notificación judicial y es probable que haya cosas que necesites que te expliquen.",
+  "Si entendiste todo, no es necesario que sigas leyendo. Si tenés dudas, estoy acá para ayudarte.",
+  "A continuación vas a encontrar una explicación simple de qué significa esta notificación, qué tenés que hacer y cuándo.",
+  "Si te quedan preguntas, podés hacérmelas al final de la página.",
+  "También podés contactar a las personas del organismo que te envió la notificación, o a tu abogado o abogada, usando los botones de más abajo.",
+  "Tené en cuenta que las respuestas no son instantáneas — te van a responder cuando sus tareas se lo permitan.",
+]
+
+// Tiempos acumulados en ms para cada subtítulo
+const TIEMPOS = [0, 7000, 13000, 21000, 26000, 36000]
 
 function SplashVideo({ onSkip }) {
+  const [subtituloActual, setSubtituloActual] = useState(0)
+
+  useEffect(() => {
+    const timers = TIEMPOS.map((delay, idx) =>
+      setTimeout(() => setSubtituloActual(idx), delay)
+    )
+    return () => timers.forEach(clearTimeout)
+  }, [])
+
   return (
-    <div className="fixed inset-0 z-50 bg-blue-950 flex flex-col items-center justify-center px-6">
-      <img
-        src="/clara-avatar.jpg"
-        alt="Clara"
-        className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg mb-6"
-        onError={(e) => { e.target.style.display = 'none' }}
-      />
-      <h1 className="text-white text-2xl font-bold text-center mb-2">Hola, soy Clara</h1>
-      <p className="text-blue-200 text-sm text-center mb-8">
-        Estoy aquí para explicarle en palabras simples la notificación judicial que recibió.
-      </p>
-      <a
-        href={VIDEO_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={onSkip}
-        className="w-full max-w-xs bg-white text-blue-900 font-bold text-lg py-4 rounded-2xl flex items-center justify-center gap-3 shadow-lg mb-4"
-      >
-        <span className="text-3xl">▶</span> Ver introducción en video
-      </a>
+    <div className="fixed inset-0 z-50 bg-black flex flex-col">
+      {/* Botón saltar — esquina superior derecha */}
       <button
         onClick={onSkip}
-        className="text-blue-300 text-sm underline py-2"
+        className="absolute top-4 right-4 z-10 bg-white bg-opacity-90 text-gray-900 font-bold px-4 py-2 rounded-xl text-sm shadow-lg"
       >
-        Saltar introducción →
+        Saltar →
       </button>
+
+      {/* Video embebido */}
+      <div className="flex-1 relative">
+        <iframe
+          src={VIDEO_EMBED_URL}
+          className="w-full h-full border-0"
+          allow="autoplay; fullscreen"
+          allowFullScreen
+        />
+      </div>
+
+      {/* Subtítulos */}
+      <div className="bg-black px-4 py-3 min-h-20 flex items-center justify-center">
+        <p className="text-white text-center text-base font-medium leading-snug max-w-lg transition-all duration-500">
+          {SUBTITULOS[subtituloActual]}
+        </p>
+      </div>
     </div>
   )
 }
