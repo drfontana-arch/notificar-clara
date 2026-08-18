@@ -16,6 +16,9 @@ export default function PanelOperador() {
     tipo_discapacidad: '',
     transporte_publico: '',
     acceso_accesible: '',
+    referente_nombre: '',
+    referente_cargo: '',
+    pdf_url: '',
   })
   const [estado, setEstado] = useState('idle') // idle | cargando | listo | error
   const [resultado, setResultado] = useState(null)
@@ -36,6 +39,8 @@ export default function PanelOperador() {
         tipo_discapacidad: form.tiene_discapacidad ? (form.tipo_discapacidad || null) : null,
         transporte_publico: form.tiene_discapacidad ? form.transporte_publico : '',
         acceso_accesible: form.tiene_discapacidad ? form.acceso_accesible : '',
+        referente_nombre: form.tiene_discapacidad ? form.referente_nombre : '',
+        referente_cargo: form.tiene_discapacidad ? form.referente_cargo : '',
       }
       const res = await fetch('/api/procesar', {
         method: 'POST',
@@ -259,8 +264,54 @@ export default function PanelOperador() {
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
                   />
                 </div>
+
+                {/* Referente de atención */}
+                <div className="border-t border-blue-200 pt-3">
+                  <p className="text-xs font-semibold text-blue-700 mb-2">Referente de atención (opcional)</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-1">Nombre</label>
+                      <input
+                        type="text"
+                        name="referente_nombre"
+                        value={form.referente_nombre}
+                        onChange={handleChange}
+                        placeholder="Ej: María González"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-1">Cargo / Rol</label>
+                      <input
+                        type="text"
+                        name="referente_cargo"
+                        value={form.referente_cargo}
+                        onChange={handleChange}
+                        placeholder="Ej: Trabajadora social"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">La persona sabrá a quién preguntar al llegar al organismo.</p>
+                </div>
               </div>
             )}
+          </div>
+
+          {/* Link a notificación formal */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1">
+              Link a la notificación formal (PDF en Drive u otro servicio)
+            </label>
+            <input
+              type="url"
+              name="pdf_url"
+              value={form.pdf_url}
+              onChange={handleChange}
+              placeholder="Ej: https://drive.google.com/file/d/..."
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-judicial-claro"
+            />
+            <p className="text-xs text-gray-500 mt-1">El ciudadano podrá abrir el PDF o enviárselo a su abogado/a por WhatsApp.</p>
           </div>
 
           {/* Submit */}

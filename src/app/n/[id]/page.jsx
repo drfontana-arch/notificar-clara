@@ -77,7 +77,7 @@ function ContactoButtons({ datos }) {
         >
           <span className="text-3xl">💬</span>
           <div>
-            <p className="text-base font-bold">Escribir por WhatsApp</p>
+            <p className="text-base font-bold">Comunicarse por WhatsApp</p>
             <p className="text-green-100 text-xs font-normal">al {datos.organo_emisor || 'órgano emisor'}</p>
           </div>
         </a>
@@ -91,7 +91,7 @@ function ContactoButtons({ datos }) {
         >
           <span className="text-3xl">⚖️</span>
           <div>
-            <p className="text-base font-bold">Escribir a mi abogado/a</p>
+            <p className="text-base font-bold">Comunicarse con mi abogado/a</p>
             <p className="text-blue-200 text-xs font-normal">{datos.abogado_nombre || 'por WhatsApp'}</p>
           </div>
         </a>
@@ -238,11 +238,22 @@ export default function PaginaCiudadano() {
   const [altoContraste, setAltoContraste] = useState(false)
   const [mostrarSplash, setMostrarSplash] = useState(true)
   const [zoom, setZoom] = useState(0) // 0 = normal, 1 = grande, 2 = muy grande
+  const [accesibilidadAplicada, setAccesibilidadAplicada] = useState(false)
 
   useEffect(() => {
     fetch(`/api/notificacion?id=${id}`)
       .then((r) => r.json())
-      .then((data) => { if (data.error) setError(data.error); else setNotif(data) })
+      .then((data) => {
+        if (data.error) { setError(data.error); return }
+        setNotif(data)
+        // Accesibilidad automática para discapacidad visual o adulto mayor
+        const d = data.datos_procesados
+        if (!accesibilidadAplicada && (d?.tipo_discapacidad === 'visual' || d?.tipo_destinatario === 'adulto_mayor')) {
+          setAltoContraste(true)
+          setZoom(2)
+          setAccesibilidadAplicada(true)
+        }
+      })
       .catch(() => setError('No se pudo cargar la notificación.'))
   }, [id])
 
@@ -331,7 +342,7 @@ export default function PaginaCiudadano() {
 
       <div
         className="max-w-lg mx-auto px-4 pt-6"
-        style={{ fontSize: zoom === 1 ? '1.1rem' : zoom === 2 ? '1.22rem' : '1rem' }}
+        style={{ zoom: zoom === 1 ? 1.12 : zoom === 2 ? 1.25 : 1 }}
       >
 
         <div className={`rounded-xl p-4 mb-4 ${altoContraste ? 'bg-gray-800' : 'bg-white shadow'}`}>
@@ -357,6 +368,36 @@ export default function PaginaCiudadano() {
         </div>
 
         {(d.es_primera_notificacion || d.es_primera_notificacion_imputado) && <PrimerNotificacionPanel />}
+
+        {/* Ajuste razonable: recordatorio acompañante + botón solicitar */}
+        {(d.tipo_discapacidad || d.tipo_destinatario === 'adulto_mayor') && (
+          <div className={`rounded-xl p-4 mb-4 border-l-4 border-blue-500 ${altoContraste ? 'bg-gray-800' : 'bg-blue-50 shadow'}`}>
+            <p className="text-sm font-bold text-blue-800 mb-2">👥 Usted puede concurrir acompañado/a</p>
+            <p className="text-sm text-blue-900 mb-3">
+              Tiene derecho a asistir con un familiar, persona de confianza o referente de apoyo. No necesita ningún permiso especial para traer acompañante.
+            </p>
+            {d.organo_whatsapp && (
+              <a
+                href={`https://wa.me/${d.organo_whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(
+                  `Hola, me comunico en relación a la Causa N° ${d.datos_clave?.numero_causa || '(sin número)'}. Recibí una notificación del ${d.organo_emisor || 'organismo'} y quisiera informar que requiero un ajuste razonable para poder participar adecuadamente del acto. Por favor, ¿me pueden indicar cómo solicitarlo?`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`inline-flex items-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm w-full justify-center ${
+                  (d.es_primera_notificacion || d.es_primera_notificacion_imputado)
+                    ? 'bg-blue-700 text-white text-base py-4'
+                    : 'bg-blue-100 text-blue-800 border border-blue-300'
+                }`}
+              >
+                <span className="text-xl">🤝</span>
+                Solicitar ajuste razonable al organismo
+              </a>
+            )}
+            {!d.organo_whatsapp && (
+              <p className="text-xs text-blue-600 italic">Para solicitar un ajuste, comuníquese directamente con el organismo que le envió la notificación.</p>
+            )}
+          </div>
+        )}
 
         {(d.datos_clave?.fecha || d.datos_clave?.hora || d.datos_clave?.lugar) && (
           <div className={`rounded-xl p-4 mb-4 border-l-4 border-blue-500 ${altoContraste ? 'bg-gray-800' : 'bg-white shadow'}`}>
@@ -393,6 +434,14 @@ export default function PaginaCiudadano() {
               <div className="mt-2">
                 <p className="text-xs font-semibold text-indigo-700 mb-1">♿ Acceso accesible:</p>
                 <p className="text-sm">{d.acceso_accesible}</p>
+              </div>
+            )}
+            {d.referente_nombre && (
+              <div className="mt-3 bg-indigo-100 border border-indigo-300 rounded-lg p-3">
+                <p className="text-xs font-semibold text-indigo-800 mb-1">👤 Al llegar, pregunte por:</p>
+                <p className="text-base font-bold text-indigo-900">{d.referente_nombre}</p>
+                {d.referente_cargo && <p className="text-sm text-indigo-700">{d.referente_cargo}</p>}
+                <p className="text-xs text-indigo-600 mt-1">Esta persona está al tanto de su situación y la atenderá.</p>
               </div>
             )}
           </div>
@@ -432,6 +481,41 @@ export default function PaginaCiudadano() {
         <div className={`rounded-xl p-4 ${altoContraste ? 'bg-gray-800' : 'bg-white shadow'}`}>
           <ContactoButtons datos={d} />
         </div>
+
+        {/* Notificación formal adjunta */}
+        {d.pdf_url && (
+          <div className={`rounded-xl p-4 mt-4 ${altoContraste ? 'bg-gray-800' : 'bg-white shadow'}`}>
+            <p className="text-xs font-bold uppercase text-gray-500 mb-3">📄 Notificación formal original</p>
+            <a
+              href={d.pdf_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 bg-gray-700 hover:bg-gray-600 text-white rounded-2xl px-5 py-3 font-semibold text-sm transition-colors shadow mb-2"
+            >
+              <span className="text-2xl">📄</span>
+              <div>
+                <p className="font-bold">Ver notificación original</p>
+                <p className="text-gray-300 text-xs font-normal">Abre el documento oficial</p>
+              </div>
+            </a>
+            {d.abogado_whatsapp && (
+              <a
+                href={`https://wa.me/${d.abogado_whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(
+                  `Hola ${d.abogado_nombre || ''}, le reenvío el documento de la notificación judicial que recibí (Causa N° ${d.datos_clave?.numero_causa || '(sin número)'}): ${d.pdf_url}`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 bg-blue-800 hover:bg-blue-700 text-white rounded-2xl px-5 py-3 font-semibold text-sm transition-colors shadow"
+              >
+                <span className="text-2xl">⚖️</span>
+                <div>
+                  <p className="font-bold">Enviar a mi abogado/a</p>
+                  <p className="text-blue-200 text-xs font-normal">{d.abogado_nombre || 'por WhatsApp'}</p>
+                </div>
+              </a>
+            )}
+          </div>
+        )}
 
         {/* Bloque 4 — Voluntad de apelar (solo sentencias penales y cámara) */}
         {['sentencia_penal', 'sentencia_camara', 'resolucion_penal'].includes(d.tipo_acto) && (

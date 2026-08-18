@@ -255,6 +255,17 @@ Esta notificación involucra a un/a adolescente de entre 13 y 17 años.
 - Recordá que debe actuar con un adulto responsable y con asistencia letrada o de la Defensoría.
 - Tono respetuoso y empático, que reconozca su autonomía progresiva.
 `,
+  adulto_mayor: `
+DESTINATARIO — ADULTO/A MAYOR:
+Esta notificación va dirigida a una persona adulta mayor.
+- Usá frases cortas, claras y directas. Una sola idea por oración.
+- Evitá tecnicismos. Si debés usar un término legal, explicalo inmediatamente en palabras simples.
+- Tono cálido, paciente y respetuoso. Nunca condescendiente.
+- Recordá siempre que la persona tiene derecho a concurrir acompañada de un familiar, persona de confianza o referente de apoyo, y que esto es un derecho y no un requisito.
+- En que_debe_hacer, mencioná explícitamente la posibilidad de solicitar al organismo ajustes como sala accesible, horario conveniente o atención preferencial.
+- Si hay plazos, resaltalos con claridad y en palabras simples.
+- Siempre derivá a abogado/a o Defensoría Oficial para cualquier acto procesal.
+`,
 }
 
 export const TIPOS_DESTINATARIO = [
@@ -266,6 +277,7 @@ export const TIPOS_DESTINATARIO = [
   { value: 'nna_0_6', label: 'Niño/Niña (0-6 años)' },
   { value: 'nna_7_12', label: 'Niño/Niña (7-12 años)' },
   { value: 'nna_13_17', label: 'Adolescente (13-17 años)' },
+  { value: 'adulto_mayor', label: 'Adulto/a mayor' },
   { value: 'letrado', label: 'Letrado/a (abogado/a) — solo triage' },
   { value: 'perito', label: 'Perito/a — solo triage' },
 ]

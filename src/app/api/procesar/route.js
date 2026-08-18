@@ -14,6 +14,9 @@ export async function POST(request) {
       tipo_discapacidad,
       transporte_publico,
       acceso_accesible,
+      referente_nombre,
+      referente_cargo,
+      pdf_url,
       organo_emisor,
       organo_whatsapp,
       abogado_nombre,
@@ -36,6 +39,9 @@ export async function POST(request) {
     datos.tipo_discapacidad = tipo_discapacidad || null
     datos.transporte_publico = transporte_publico || ''
     datos.acceso_accesible = acceso_accesible || ''
+    datos.referente_nombre = referente_nombre || ''
+    datos.referente_cargo = referente_cargo || ''
+    datos.pdf_url = pdf_url || ''
     datos.organo_emisor = organo_emisor || ''
     datos.organo_whatsapp = organo_whatsapp || ''
     datos.abogado_nombre = abogado_nombre || ''
