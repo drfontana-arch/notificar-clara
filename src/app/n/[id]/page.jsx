@@ -1,8 +1,38 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams } from 'next/navigation'
 
 const VIDEO_EMBED_URL = 'https://drive.google.com/file/d/1izDkfcYIj9WzttgWZG7PTHjNvvpMx8EM/preview?autoplay=1'
+const VIDEO_DURACION_MS = 43000 // duración aprox. del video introductorio
+
+// ── Analytics ──────────────────────────────────────────────────────────────
+function detectarDispositivo() {
+  const ua = navigator.userAgent
+  let dispositivo = 'desktop'
+  if (/iPhone|iPod/i.test(ua)) dispositivo = 'iphone'
+  else if (/iPad/i.test(ua)) dispositivo = 'ipad'
+  else if (/Android/i.test(ua) && /Mobile/i.test(ua)) dispositivo = 'android_mobile'
+  else if (/Android/i.test(ua)) dispositivo = 'android_tablet'
+
+  let so = 'desconocido'
+  if (/Android/i.test(ua)) so = 'android'
+  else if (/iPhone|iPad|iPod/i.test(ua)) so = 'ios'
+  else if (/Mac/i.test(ua)) so = 'macos'
+  else if (/Windows/i.test(ua)) so = 'windows'
+  else if (/Linux/i.test(ua)) so = 'linux'
+
+  return { dispositivo, so }
+}
+
+function registrarEvento(notificacion_id, tipo_evento) {
+  if (!notificacion_id) return
+  const { dispositivo, so } = detectarDispositivo()
+  fetch('/api/evento', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ notificacion_id, tipo_evento, dispositivo, sistema_operativo: so }),
+  }).catch(() => {})
+}
 
 const SUBTITULOS = [
   "Hola. Recibiste una notificación judicial y es probable que haya cosas que necesites que te expliquen.",
@@ -16,21 +46,33 @@ const SUBTITULOS = [
 // Tiempos acumulados en ms para cada subtítulo
 const TIEMPOS = [0, 7000, 13000, 21000, 26000, 36000]
 
-function SplashVideo({ onSkip }) {
+function SplashVideo({ onSkip, notifId }) {
   const [subtituloActual, setSubtituloActual] = useState(0)
 
   useEffect(() => {
     const timers = TIEMPOS.map((delay, idx) =>
       setTimeout(() => setSubtituloActual(idx), delay)
     )
-    return () => timers.forEach(clearTimeout)
+    // Mejora H: auto-transición al terminar el video
+    const autoSkip = setTimeout(() => {
+      registrarEvento(notifId, 'video_completado')
+      onSkip()
+    }, VIDEO_DURACION_MS)
+
+    return () => {
+      timers.forEach(clearTimeout)
+      clearTimeout(autoSkip)
+    }
   }, [])
 
   return (
     <div className="fixed inset-0 z-50 bg-black flex flex-col">
       {/* Botón saltar — esquina superior derecha */}
       <button
-        onClick={onSkip}
+        onClick={() => {
+          registrarEvento(notifId, 'video_saltado')
+          onSkip()
+        }}
         className="absolute top-4 right-4 z-10 bg-white bg-opacity-90 text-gray-900 font-bold px-4 py-2 rounded-xl text-sm shadow-lg"
       >
         Saltar →
@@ -78,7 +120,7 @@ function urgenciaLabel(nivel) {
   return '🟢 Sin urgencia inmediata'
 }
 
-function ContactoButtons({ datos }) {
+function ContactoButtons({ datos, notifId }) {
   const buildWALink = (numero, mensaje) => {
     const num = numero.replace(/\D/g, '')
     return `https://wa.me/${num}?text=${encodeURIComponent(mensaje)}`
@@ -93,6 +135,7 @@ function ContactoButtons({ datos }) {
           href={buildWALink(datos.organo_whatsapp, `${etiqueta} — Causa N° ${datos.datos_clave?.numero_causa || '(sin número)'} - Resolución del ${datos.datos_clave?.fecha || '(sin fecha)'}. Recibí una notificación de ${datos.organo_emisor} y tengo una consulta sobre su contenido.`)}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => registrarEvento(notifId, 'click_whatsapp_organo')}
           className="flex items-center gap-4 bg-green-600 hover:bg-green-700 text-white rounded-2xl px-5 py-4 font-semibold transition-colors shadow"
         >
           <span className="text-3xl">💬</span>
@@ -107,6 +150,7 @@ function ContactoButtons({ datos }) {
           href={buildWALink(datos.abogado_whatsapp, `${etiqueta} — Causa N° ${datos.datos_clave?.numero_causa || '(sin número)'} - Resolución del ${datos.datos_clave?.fecha || '(sin fecha)'}. Hola ${datos.abogado_nombre || ''}, recibí una notificación y quisiera consultarle sobre su contenido.`)}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => registrarEvento(notifId, 'click_whatsapp_abogado')}
           className="flex items-center gap-4 bg-blue-800 hover:bg-blue-700 text-white rounded-2xl px-5 py-4 font-semibold transition-colors shadow"
         >
           <span className="text-3xl">⚖️</span>
@@ -120,14 +164,30 @@ function ContactoButtons({ datos }) {
   )
 }
 
-function EscucharBoton({ texto }) {
+function EscucharBoton({ texto, esVisual = false, notifId, tipoEvento = 'escuchar_notificacion' }) {
   const [hablando, setHablando] = useState(false)
+  const anunciadoRef = useRef(false)
+
+  // Mejora I: al primer toque (touchstart), vibrar + anunciar por voz antes de reproducir
+  const handleTouchStart = () => {
+    if (esVisual && !anunciadoRef.current) {
+      anunciadoRef.current = true
+      if (navigator.vibrate) navigator.vibrate(200)
+      const aviso = new SpeechSynthesisUtterance('Botón: escuchar la notificación en voz alta. Toque para reproducir.')
+      aviso.lang = 'es-AR'
+      aviso.rate = 0.95
+      window.speechSynthesis.cancel()
+      window.speechSynthesis.speak(aviso)
+    }
+  }
+
   const hablar = () => {
     if (hablando) {
       window.speechSynthesis.cancel()
       setHablando(false)
       return
     }
+    registrarEvento(notifId, tipoEvento)
     const utterance = new SpeechSynthesisUtterance(texto)
     utterance.lang = 'es-AR'
     utterance.rate = 0.9
@@ -136,8 +196,10 @@ function EscucharBoton({ texto }) {
     window.speechSynthesis.speak(utterance)
     setHablando(true)
   }
+
   return (
     <button
+      onTouchStart={handleTouchStart}
       onClick={hablar}
       className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm shadow transition-colors ${hablando ? 'bg-red-100 text-red-700 border border-red-300' : 'bg-blue-100 text-blue-800 border border-blue-300 hover:bg-blue-200'}`}
     >
@@ -243,7 +305,7 @@ function FAQSection({ preguntas, notifId }) {
           <div className="mt-4 bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-gray-800">
             <p className="font-semibold text-blue-800 mb-2">Clara responde:</p>
             <p className="mb-3">{respuesta}</p>
-            <EscucharBoton texto={respuesta} />
+            <EscucharBoton texto={respuesta} notifId={notifId} tipoEvento="escuchar_respuesta_clara" />
           </div>
         )}
       </div>
@@ -266,6 +328,8 @@ export default function PaginaCiudadano() {
       .then((data) => {
         if (data.error) { setError(data.error); return }
         setNotif(data)
+        // Registrar escaneo de QR
+        registrarEvento(id, 'qr_scan')
         // Accesibilidad automática para discapacidad visual o adulto mayor
         const d = data.datos_procesados
         if (!accesibilidadAplicada && (d?.tipo_discapacidad === 'visual' || d?.tipo_destinatario === 'adulto_mayor')) {
@@ -276,6 +340,21 @@ export default function PaginaCiudadano() {
       })
       .catch(() => setError('No se pudo cargar la notificación.'))
   }, [id])
+
+  // Registrar lectura completa cuando el usuario llega al final
+  useEffect(() => {
+    if (!notif) return
+    const handleScroll = () => {
+      const scrollBottom = window.scrollY + window.innerHeight
+      const docHeight = document.documentElement.scrollHeight
+      if (scrollBottom >= docHeight - 80) {
+        registrarEvento(id, 'lectura_completa')
+        window.removeEventListener('scroll', handleScroll)
+      }
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [notif, id])
 
   if (error) return (
     <div className="min-h-screen flex items-center justify-center p-6">
@@ -332,7 +411,7 @@ export default function PaginaCiudadano() {
     <main className={`min-h-screen pb-16 ${altoContraste ? 'bg-black text-white' : 'bg-gray-100 text-gray-900'}`}>
 
       {/* Splash de bienvenida con video */}
-      {mostrarSplash && <SplashVideo onSkip={() => setMostrarSplash(false)} />}
+      {mostrarSplash && <SplashVideo notifId={id} onSkip={() => setMostrarSplash(false)} />}
 
       <header className={`px-5 py-4 flex items-center justify-between shadow ${altoContraste ? 'bg-gray-900' : 'bg-blue-900'}`}>
         <div>
@@ -473,7 +552,12 @@ export default function PaginaCiudadano() {
             {d.explicacion_principal?.split('\n').filter(Boolean).map((p, i) => <p key={i}>{p}</p>)}
           </div>
           {/* Botón escuchar — grande y visible */}
-          <EscucharBoton texto={d.explicacion_principal} />
+          <EscucharBoton
+            texto={d.explicacion_principal}
+            esVisual={d.tipo_discapacidad === 'visual'}
+            notifId={id}
+            tipoEvento="escuchar_notificacion"
+          />
         </div>
 
         {d.que_debe_hacer && (
@@ -499,7 +583,7 @@ export default function PaginaCiudadano() {
         </div>
 
         <div className={`rounded-xl p-4 ${altoContraste ? 'bg-gray-800' : 'bg-white shadow'}`}>
-          <ContactoButtons datos={d} />
+          <ContactoButtons datos={d} notifId={id} />
         </div>
 
         {/* Notificación formal adjunta */}
