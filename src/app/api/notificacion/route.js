@@ -26,6 +26,37 @@ export async function GET(request) {
   }
 }
 
+// PATCH /api/notificacion  → actualiza nivel_urgencia manualmente
+export async function PATCH(request) {
+  try {
+    const { id, nivel_urgencia } = await request.json()
+    if (!id || !nivel_urgencia) return NextResponse.json({ error: 'Faltan datos' }, { status: 400 })
+    if (!['rojo', 'amarillo', 'verde'].includes(nivel_urgencia)) {
+      return NextResponse.json({ error: 'Urgencia inválida' }, { status: 400 })
+    }
+
+    const db = supabaseAdmin()
+    const { data: notif, error: getErr } = await db
+      .from('notificaciones')
+      .select('datos_procesados')
+      .eq('id', id)
+      .single()
+
+    if (getErr || !notif) return NextResponse.json({ error: 'No encontrada' }, { status: 404 })
+
+    const nuevos_datos = { ...notif.datos_procesados, nivel_urgencia }
+    const { error: updErr } = await db
+      .from('notificaciones')
+      .update({ datos_procesados: nuevos_datos })
+      .eq('id', id)
+
+    if (updErr) throw updErr
+    return NextResponse.json({ ok: true, nivel_urgencia })
+  } catch (err) {
+    return NextResponse.json({ error: err.message }, { status: 500 })
+  }
+}
+
 // POST /api/notificacion  → responde una pregunta libre sobre la notificación
 export async function POST(request) {
   try {

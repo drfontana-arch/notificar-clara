@@ -468,8 +468,10 @@ export default function PaginaCiudadano() {
 
         {(d.es_primera_notificacion || d.es_primera_notificacion_imputado) && <PrimerNotificacionPanel />}
 
-        {/* Ajuste razonable: recordatorio acompañante + botón solicitar */}
-        {(d.tipo_discapacidad || d.tipo_destinatario === 'adulto_mayor') && (
+        {/* Ajuste razonable: recordatorio acompañante + botón solicitar
+            Solo se muestra cuando hay un lugar al que concurrir (citaciones, audiencias)
+            No aplica a sentencias o resoluciones que solo se notifican */}
+        {(d.tipo_discapacidad || d.tipo_destinatario === 'adulto_mayor') && d.datos_clave?.lugar && (
           <div className={`rounded-xl p-4 mb-4 border-l-4 border-blue-500 ${altoContraste ? 'bg-gray-800' : 'bg-blue-50 shadow'}`}>
             <p className="text-sm font-bold text-blue-800 mb-2">👥 Usted puede concurrir acompañado/a</p>
             <p className="text-sm text-blue-900 mb-3">
@@ -603,20 +605,9 @@ export default function PaginaCiudadano() {
               </div>
             </a>
             {d.abogado_whatsapp && (
-              <a
-                href={`https://wa.me/${d.abogado_whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(
-                  `Hola ${d.abogado_nombre || ''}, le reenvío el documento de la notificación judicial que recibí (Causa N° ${d.datos_clave?.numero_causa || '(sin número)'}): ${d.pdf_url}`
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 bg-blue-800 hover:bg-blue-700 text-white rounded-2xl px-5 py-3 font-semibold text-sm transition-colors shadow"
-              >
-                <span className="text-2xl">⚖️</span>
-                <div>
-                  <p className="font-bold">Enviar a mi abogado/a</p>
-                  <p className="text-blue-200 text-xs font-normal">{d.abogado_nombre || 'por WhatsApp'}</p>
-                </div>
-              </a>
+              <p className="text-xs text-gray-500 mt-1 italic">
+                Para enviar este documento a su abogado/a, use el botón de contacto al final de la página.
+              </p>
             )}
           </div>
         )}

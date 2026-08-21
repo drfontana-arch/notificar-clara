@@ -55,6 +55,22 @@ export default function PanelOperador() {
   const [estado, setEstado] = useState('idle')
   const [resultado, setResultado] = useState(null)
   const [error, setError] = useState('')
+  const [urgenciaOverride, setUrgenciaOverride] = useState(null)
+  const [guardandoUrgencia, setGuardandoUrgencia] = useState(false)
+
+  const cambiarUrgencia = async (nuevo) => {
+    if (!resultado?.id) return
+    setGuardandoUrgencia(true)
+    try {
+      await fetch('/api/notificacion', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: resultado.id, nivel_urgencia: nuevo }),
+      })
+      setUrgenciaOverride(nuevo)
+    } catch {}
+    setGuardandoUrgencia(false)
+  }
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -66,6 +82,7 @@ export default function PanelOperador() {
     setEstado('cargando')
     setError('')
     setResultado(null)
+    setUrgenciaOverride(null)
     try {
       const payload = {
         ...form,
@@ -90,7 +107,8 @@ export default function PanelOperador() {
     }
   }
 
-  const urg = URGENCIA[resultado?.datos?.nivel_urgencia] || URGENCIA.verde
+  const urgenciaActual = urgenciaOverride || resultado?.datos?.nivel_urgencia
+  const urg = URGENCIA[urgenciaActual] || URGENCIA.verde
 
   return (
     <div className="min-h-screen bg-[#f0f4f8] flex flex-col">
@@ -310,6 +328,32 @@ export default function PanelOperador() {
                 {resultado.datos?.motivo_urgencia && (
                   <p className="text-xs text-gray-600 mt-1">{resultado.datos.motivo_urgencia}</p>
                 )}
+                {/* Selector manual de urgencia */}
+                <div className="mt-3 pt-3 border-t border-gray-200">
+                  <p className="text-xs text-gray-500 mb-2">
+                    {guardandoUrgencia ? 'Guardando...' : 'Ajustar urgencia manualmente:'}
+                  </p>
+                  <div className="flex gap-2">
+                    {[
+                      { value: 'rojo',    emoji: '🔴', label: 'Urgente' },
+                      { value: 'amarillo',emoji: '🟡', label: 'Importante' },
+                      { value: 'verde',   emoji: '🟢', label: 'Sin urgencia' },
+                    ].map(({ value, emoji, label }) => (
+                      <button
+                        key={value}
+                        onClick={() => cambiarUrgencia(value)}
+                        disabled={guardandoUrgencia}
+                        className={`flex-1 text-xs py-1.5 rounded-lg font-semibold border-2 transition-colors ${
+                          urgenciaActual === value
+                            ? 'border-[#003366] bg-[#003366] text-white'
+                            : 'border-gray-200 bg-white text-gray-600 hover:border-gray-400'
+                        }`}
+                      >
+                        {emoji} {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* QR */}
