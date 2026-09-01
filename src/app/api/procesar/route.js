@@ -32,7 +32,7 @@ export async function POST(request) {
     }
 
     // 1. Procesar con IA
-    const datos = await procesarNotificacion(texto_original, tipo_acto, tipo_destinatario || 'actor', tipo_discapacidad || null)
+    const { datos, tokens_entrada, tokens_salida } = await procesarNotificacion(texto_original, tipo_acto, tipo_destinatario || 'actor', tipo_discapacidad || null)
 
     // Enriquecer con datos del formulario
     datos.tipo_destinatario = tipo_destinatario || 'actor'
@@ -56,6 +56,8 @@ export async function POST(request) {
       texto_original,
       tipo_acto,
       datos_procesados: datos,
+      tokens_entrada,
+      tokens_salida,
       creado_en: new Date().toISOString(),
     })
 

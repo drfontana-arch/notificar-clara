@@ -125,6 +125,12 @@ export default function PanelOperador() {
         <div className="flex items-center gap-3">
           <span className="text-xs text-blue-300 hidden sm:block">Provincia de Buenos Aires</span>
           <a
+            href="/sobre"
+            className="flex items-center gap-1.5 bg-blue-800 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
+          >
+            📖 Manual
+          </a>
+          <a
             href="/admin/estadisticas"
             className="flex items-center gap-1.5 bg-[#00C2C2] hover:bg-teal-400 text-[#003366] text-xs font-bold px-3 py-2 rounded-lg transition-colors"
           >
@@ -413,8 +419,13 @@ export default function PanelOperador() {
           )}
 
           {/* Pie de marca */}
-          <div className="text-center pt-2">
-            <p className="text-xs text-gray-300 font-mono">Red Marea D+I · NotificAR Clara · Provincia de Buenos Aires</p>
+          <div className="text-center pt-2 space-y-0.5">
+            <p className="text-xs text-gray-400 font-mono uppercase tracking-widest">Red Marea D+I</p>
+            <p className="text-xs text-gray-400">
+              Enzo Fontana · <a href="mailto:dr.fontana@gmail.com" className="hover:underline">dr.fontana@gmail.com</a>
+              {' '}· Laura Bulesevich · <a href="mailto:bulesevichlaura@gmail.com" className="hover:underline">bulesevichlaura@gmail.com</a>
+            </p>
+            <p className="text-xs text-gray-300">NotificAR Clara — Provincia de Buenos Aires</p>
           </div>
         </div>
       </div>

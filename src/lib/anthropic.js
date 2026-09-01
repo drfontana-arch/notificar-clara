@@ -31,7 +31,11 @@ ${textoOriginal}
   // Limpiar posibles markdown code fences
   const json = raw.replace(/^```json\n?/, '').replace(/\n?```$/, '')
 
-  return JSON.parse(json)
+  return {
+    datos: JSON.parse(json),
+    tokens_entrada: response.usage?.input_tokens ?? 0,
+    tokens_salida:  response.usage?.output_tokens ?? 0,
+  }
 }
 
 export async function responderPreguntaLibre(pregunta, datosNotificacion) {

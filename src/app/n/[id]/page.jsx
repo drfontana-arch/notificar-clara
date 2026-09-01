@@ -209,6 +209,139 @@ function EscucharBoton({ texto, esVisual = false, notifId, tipoEvento = 'escucha
   )
 }
 
+// ── Calendario ──────────────────────────────────────────────────────────────
+const MESES = { enero:1, febrero:2, marzo:3, abril:4, mayo:5, junio:6, julio:7, agosto:8, septiembre:9, octubre:10, noviembre:11, diciembre:12 }
+
+function parsearFechaHora(fechaStr, horaStr) {
+  if (!fechaStr) return null
+  let anio, mes, dia
+
+  // ISO: YYYY-MM-DD
+  const iso = fechaStr.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (iso) { [, anio, mes, dia] = iso.map(Number); }
+
+  // dd/mm/yyyy o dd/mm/yy
+  if (!anio) {
+    const dmy = fechaStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/)
+    if (dmy) { dia = +dmy[1]; mes = +dmy[2]; anio = +dmy[3]; if (anio < 100) anio += 2000 }
+  }
+
+  // "15 de octubre de 2026" o "15 de octubre"
+  if (!anio) {
+    const txt = fechaStr.match(/(\d{1,2})\s+de\s+(\w+)(?:\s+de\s+(\d{4}))?/i)
+    if (txt) {
+      dia = +txt[1]; mes = MESES[txt[2].toLowerCase()]; anio = txt[3] ? +txt[3] : new Date().getFullYear()
+    }
+  }
+
+  if (!anio || !mes || !dia) return null
+
+  let hh = 9, mm = 0
+  if (horaStr) {
+    const h = horaStr.match(/(\d{1,2}):(\d{2})/)
+    if (h) { hh = +h[1]; mm = +h[2] }
+  }
+
+  return { anio, mes, dia, hh, mm }
+}
+
+function pad(n) { return String(n).padStart(2, '0') }
+
+function CalendarioSection({ datos, altoContraste }) {
+  const dk = datos.datos_clave || {}
+  const parsed = parsearFechaHora(dk.fecha, dk.hora)
+  if (!parsed) return null
+
+  const { anio, mes, dia, hh, mm } = parsed
+  const fechaBase = `${anio}${pad(mes)}${pad(dia)}`
+  const horaBase  = `${pad(hh)}${pad(mm)}00`
+  const startStr  = `${fechaBase}T${horaBase}`
+
+  // Fin = inicio + 1 hora
+  const endDate = new Date(anio, mes - 1, dia, hh + 1, mm)
+  const endStr  = `${endDate.getFullYear()}${pad(endDate.getMonth()+1)}${pad(endDate.getDate())}T${pad(endDate.getHours())}${pad(endDate.getMinutes())}00`
+
+  const titulo  = `Notificación judicial — ${datos.tipo_acto || ''}`
+  const detalle = `Causa N° ${dk.numero_causa || 'sin número'}. ${datos.explicacion_principal?.slice(0, 200) || ''}`
+  const lugar   = dk.lugar || ''
+
+  const gcUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(titulo)}&dates=${startStr}/${endStr}&details=${encodeURIComponent(detalle)}&location=${encodeURIComponent(lugar)}`
+
+  const descargarICS = () => {
+    const uid = `${Date.now()}@notificar-clara.ar`
+    const ahora = new Date().toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z'
+    const ics = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//NotificAR Clara//PBA//ES',
+      'CALSCALE:GREGORIAN',
+      'BEGIN:VEVENT',
+      `UID:${uid}`,
+      `DTSTAMP:${ahora}`,
+      `DTSTART;TZID=America/Argentina/Buenos_Aires:${startStr}`,
+      `DTEND;TZID=America/Argentina/Buenos_Aires:${endStr}`,
+      `SUMMARY:${titulo}`,
+      `DESCRIPTION:${detalle.replace(/\n/g, '\\n')}`,
+      lugar ? `LOCATION:${lugar}` : '',
+      'BEGIN:VALARM',
+      'TRIGGER:-PT30M',
+      'ACTION:DISPLAY',
+      'DESCRIPTION:Recordatorio: notificación judicial',
+      'END:VALARM',
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].filter(Boolean).join('\r\n')
+
+    const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' })
+    const url  = URL.createObjectURL(blob)
+    const a    = document.createElement('a')
+    a.href = url; a.download = 'notificacion-judicial.ics'; a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  return (
+    <div className={`rounded-xl p-4 mb-4 border-l-4 border-[#00C2C2] ${altoContraste ? 'bg-gray-800' : 'bg-teal-50 shadow'}`}>
+      <p className="text-xs font-bold uppercase text-teal-700 mb-1">📅 Agregar al calendario</p>
+      <p className="text-xs text-teal-600 mb-3">
+        {dk.fecha}{dk.hora ? ` a las ${dk.hora}` : ''}{lugar ? ` · ${lugar}` : ''}
+      </p>
+      <div className="flex flex-col sm:flex-row gap-2">
+        <a
+          href={gcUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1 flex items-center justify-center gap-2 bg-white border border-teal-300 hover:bg-teal-50 text-teal-800 font-semibold text-sm rounded-xl px-4 py-2.5 transition-colors shadow-sm"
+        >
+          <span>📆</span> Google Calendar
+        </a>
+        <button
+          onClick={descargarICS}
+          className="flex-1 flex items-center justify-center gap-2 bg-white border border-teal-300 hover:bg-teal-50 text-teal-800 font-semibold text-sm rounded-xl px-4 py-2.5 transition-colors shadow-sm"
+        >
+          <span>⬇</span> Descargar .ics
+        </button>
+      </div>
+      <p className="text-xs text-teal-500 mt-2">El .ics es compatible con Apple Calendar, Outlook y cualquier agenda digital.</p>
+    </div>
+  )
+}
+
+function FooterRedMarea() {
+  return (
+    <footer className="mt-10 pb-8 text-center space-y-1 border-t border-gray-200 pt-6">
+      <p className="text-xs text-gray-400 font-mono uppercase tracking-widest">Red Marea D+I</p>
+      <p className="text-xs text-gray-400">
+        Enzo Fontana ·{' '}
+        <a href="mailto:dr.fontana@gmail.com" className="hover:underline">dr.fontana@gmail.com</a>
+        {' '}·{' '}
+        Laura Bulesevich ·{' '}
+        <a href="mailto:bulesevichlaura@gmail.com" className="hover:underline">bulesevichlaura@gmail.com</a>
+      </p>
+      <p className="text-xs text-gray-300">NotificAR Clara — Provincia de Buenos Aires</p>
+    </footer>
+  )
+}
+
 function FAQSection({ preguntas, notifId }) {
   const [preguntaLibre, setPreguntaLibre] = useState('')
   const [respuesta, setRespuesta] = useState('')
@@ -402,7 +535,7 @@ export default function PaginaCiudadano() {
             </div>
           )}
         </div>
-        <p className="text-center text-xs text-gray-400">NotificAR Clara — Provincia de Buenos Aires</p>
+        <FooterRedMarea />
       </div>
     </main>
   )
@@ -511,6 +644,9 @@ export default function PaginaCiudadano() {
             </div>
           </div>
         )}
+
+        {/* Agregar al calendario — cuando hay fecha */}
+        <CalendarioSection datos={d} altoContraste={altoContraste} />
 
         {/* Cómo llegar — se muestra cuando hay lugar en la notificación */}
         {d.datos_clave?.lugar && (
@@ -676,7 +812,7 @@ export default function PaginaCiudadano() {
           </div>
         )}
 
-        <p className="text-center text-xs text-gray-400 mt-8">NotificAR Clara — Provincia de Buenos Aires</p>
+        <FooterRedMarea />
       </div>
     </main>
   )
