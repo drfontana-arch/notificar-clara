@@ -126,6 +126,7 @@ export default function SobrePage() {
             ['#proyecto', '📋 El proyecto'],
             ['#manual', '📖 Manual de uso'],
             ['#faq', '❓ Preguntas frecuentes'],
+            ['#roadmap', '🗺️ Próximas versiones'],
             ['#versiones', '🔖 Versiones'],
           ].map(([href, label]) => (
             <a key={href} href={href} className="text-[#003366] font-semibold hover:text-[#00C2C2] transition-colors">{label}</a>
@@ -209,6 +210,32 @@ export default function SobrePage() {
                 </div>
               </details>
             ))}
+          </div>
+        </Seccion>
+
+        {/* ── Próximas versiones ── */}
+        <Seccion id="roadmap" titulo="🗺️ Próximas versiones (roadmap)">
+          <div className="bg-white rounded-xl p-5 shadow-sm space-y-4 text-sm text-gray-700 leading-relaxed">
+
+            <div className="border-l-4 border-[#00C2C2] pl-4">
+              <p className="font-bold text-[#003366] mb-1">Certificado digital de concurrencia</p>
+              <p>Cuando la notificación cita al ciudadano a comparecer, el sistema permitirá que solicite un certificado de concurrencia desde su página. La versión piloto contempla dos modalidades:</p>
+              <ul className="mt-2 space-y-2">
+                <li className="flex gap-2"><span className="text-[#00C2C2] shrink-0">·</span><span><strong>Confirmación manual por el operador:</strong> el funcionario del organismo registra la presentación desde el panel y el sistema genera y envía el certificado en PDF al teléfono del ciudadano por WhatsApp.</span></li>
+                <li className="flex gap-2"><span className="text-[#00C2C2] shrink-0">·</span><span><strong>QR de presencia en el organismo (versión avanzada):</strong> el organismo dispone de un código QR propio en su sede. Al escanearlo al momento de la presentación, el sistema registra la concurrencia automáticamente y genera el certificado sin intervención manual. Esta modalidad requiere una arquitectura más compleja y se evaluará para versiones posteriores al piloto.</span></li>
+              </ul>
+            </div>
+
+            <div className="border-l-4 border-gray-200 pl-4">
+              <p className="font-bold text-[#003366] mb-1">Avatar Clara con videos por tipo de caso</p>
+              <p>Video de bienvenida personalizado según el tipo de acto procesal, en lugar del video genérico actual.</p>
+            </div>
+
+            <div className="border-l-4 border-gray-200 pl-4">
+              <p className="font-bold text-[#003366] mb-1">Mejoras de lenguaje claro</p>
+              <p>Refinamiento del glosario de reemplazos en los prompts de la IA: términos como "comparecer" en lugar de "comparecer" (se usa en actos), eliminación de latinismos (<em>ut supra</em> → "mencionado más arriba"), y ajuste de plazos y artículos conforme al proceso bonaerense.</p>
+            </div>
+
           </div>
         </Seccion>
 

@@ -326,6 +326,34 @@ function CalendarioSection({ datos, altoContraste }) {
   )
 }
 
+function CertificadoConcurrencia({ altoContraste }) {
+  const [solicitado, setSolicitado] = useState(false)
+
+  return (
+    <div className={`rounded-xl p-4 mt-4 border-l-4 border-gray-300 ${altoContraste ? 'bg-gray-800' : 'bg-gray-50 shadow'}`}>
+      <p className="text-xs font-bold uppercase text-gray-500 mb-1">🏛️ Certificado de concurrencia</p>
+      {!solicitado ? (
+        <>
+          <p className="text-sm text-gray-600 mb-3">
+            Cuando concurra al organismo, podrá solicitar un certificado digital que acredite su presencia. Se lo enviarán a su teléfono.
+          </p>
+          <button
+            onClick={() => setSolicitado(true)}
+            className="flex items-center justify-center gap-2 w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold text-sm rounded-xl px-4 py-3 transition-colors"
+          >
+            <span className="text-lg">📋</span> Solicitar certificado de concurrencia
+          </button>
+        </>
+      ) : (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
+          <p className="font-bold mb-1">⏳ Funcionalidad en desarrollo</p>
+          <p>Esta opción estará disponible próximamente. El organismo podrá emitir el certificado digital al momento de su presentación y enviárselo por WhatsApp.</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function FooterRedMarea() {
   return (
     <footer className="mt-10 pb-8 text-center space-y-1 border-t border-gray-200 pt-6">
@@ -723,6 +751,11 @@ export default function PaginaCiudadano() {
         <div className={`rounded-xl p-4 ${altoContraste ? 'bg-gray-800' : 'bg-white shadow'}`}>
           <ContactoButtons datos={d} notifId={id} />
         </div>
+
+        {/* Certificado de concurrencia — solo cuando hay lugar */}
+        {d.datos_clave?.lugar && (
+          <CertificadoConcurrencia altoContraste={altoContraste} />
+        )}
 
         {/* Notificación formal adjunta */}
         {d.pdf_url && (
