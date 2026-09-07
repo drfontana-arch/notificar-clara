@@ -569,7 +569,84 @@ export default function PaginaCiudadano() {
   )
 
   return (
-    <main className={`min-h-screen pb-16 ${altoContraste ? 'bg-black text-white' : 'bg-gray-100 text-gray-900'}`}>
+    <main className={`min-h-screen pb-16 ${altoContraste ? 'bg-black text-white alto-contraste-mode' : 'bg-gray-100 text-gray-900'}`}>
+
+      {/* Estilos de alto contraste: fuerza texto blanco y fondos oscuros en toda la página */}
+      {altoContraste && (
+        <style>{`
+          .alto-contraste-mode [class~="text-blue-600"],
+          .alto-contraste-mode [class~="text-blue-700"],
+          .alto-contraste-mode [class~="text-blue-800"],
+          .alto-contraste-mode [class~="text-blue-900"],
+          .alto-contraste-mode [class~="text-green-700"],
+          .alto-contraste-mode [class~="text-red-600"],
+          .alto-contraste-mode [class~="text-red-700"],
+          .alto-contraste-mode [class~="text-teal-500"],
+          .alto-contraste-mode [class~="text-teal-600"],
+          .alto-contraste-mode [class~="text-teal-700"],
+          .alto-contraste-mode [class~="text-teal-800"],
+          .alto-contraste-mode [class~="text-indigo-600"],
+          .alto-contraste-mode [class~="text-indigo-700"],
+          .alto-contraste-mode [class~="text-indigo-800"],
+          .alto-contraste-mode [class~="text-indigo-900"],
+          .alto-contraste-mode [class~="text-orange-700"],
+          .alto-contraste-mode [class~="text-amber-700"],
+          .alto-contraste-mode [class~="text-amber-800"],
+          .alto-contraste-mode [class~="text-amber-900"],
+          .alto-contraste-mode [class~="text-purple-800"],
+          .alto-contraste-mode [class~="text-gray-300"],
+          .alto-contraste-mode [class~="text-gray-400"],
+          .alto-contraste-mode [class~="text-gray-500"],
+          .alto-contraste-mode [class~="text-gray-600"],
+          .alto-contraste-mode [class~="text-gray-700"],
+          .alto-contraste-mode [class~="text-gray-800"],
+          .alto-contraste-mode [class~="text-gray-900"] {
+            color: #ffffff !important;
+          }
+          .alto-contraste-mode [class~="bg-white"],
+          .alto-contraste-mode [class~="bg-gray-50"],
+          .alto-contraste-mode [class~="bg-gray-100"],
+          .alto-contraste-mode [class~="bg-gray-200"],
+          .alto-contraste-mode [class~="bg-blue-50"],
+          .alto-contraste-mode [class~="bg-blue-100"],
+          .alto-contraste-mode [class~="bg-blue-200"],
+          .alto-contraste-mode [class~="bg-green-50"],
+          .alto-contraste-mode [class~="bg-green-100"],
+          .alto-contraste-mode [class~="bg-red-50"],
+          .alto-contraste-mode [class~="bg-red-100"],
+          .alto-contraste-mode [class~="bg-teal-50"],
+          .alto-contraste-mode [class~="bg-indigo-50"],
+          .alto-contraste-mode [class~="bg-indigo-100"],
+          .alto-contraste-mode [class~="bg-amber-50"],
+          .alto-contraste-mode [class~="bg-amber-100"],
+          .alto-contraste-mode [class~="bg-orange-50"],
+          .alto-contraste-mode [class~="bg-purple-100"],
+          .alto-contraste-mode [class~="bg-yellow-100"] {
+            background-color: #1f2937 !important;
+          }
+          .alto-contraste-mode [class~="border-blue-200"],
+          .alto-contraste-mode [class~="border-blue-300"],
+          .alto-contraste-mode [class~="border-teal-300"],
+          .alto-contraste-mode [class~="border-gray-200"],
+          .alto-contraste-mode [class~="border-gray-300"],
+          .alto-contraste-mode [class~="border-indigo-300"],
+          .alto-contraste-mode [class~="border-indigo-400"],
+          .alto-contraste-mode [class~="border-amber-200"],
+          .alto-contraste-mode [class~="border-amber-300"],
+          .alto-contraste-mode [class~="border-amber-500"],
+          .alto-contraste-mode [class~="border-red-300"],
+          .alto-contraste-mode [class~="border-orange-400"],
+          .alto-contraste-mode [class~="border-purple-300"],
+          .alto-contraste-mode [class~="border-gray-400"] {
+            border-color: #6b7280 !important;
+          }
+          .alto-contraste-mode textarea {
+            background-color: #1f2937 !important;
+            color: #ffffff !important;
+            border-color: #6b7280 !important;
+          }
+        `}</style>
+      )}
 
       {/* Splash de bienvenida con video */}
       {mostrarSplash && <SplashVideo notifId={id} onSkip={() => setMostrarSplash(false)} />}
@@ -602,7 +679,7 @@ export default function PaginaCiudadano() {
 
       <div
         className="max-w-lg mx-auto px-4 pt-6"
-        style={{ zoom: zoom === 1 ? 1.12 : zoom === 2 ? 1.25 : 1 }}
+        style={{ zoom: zoom === 1 ? 1.25 : zoom === 2 ? 1.5 : 1 }}
       >
 
         <div className={`rounded-xl p-4 mb-4 ${altoContraste ? 'bg-gray-800' : 'bg-white shadow'}`}>
