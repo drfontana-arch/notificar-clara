@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import Anthropic from '@anthropic-ai/sdk'
+import { enviarAlertaEmpleado } from '@/lib/email'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -99,6 +100,7 @@ export async function POST(request) {
       .limit(1)
 
     const notificacion_id = notifs?.[0]?.id || null
+    const datosCausa = notifs?.[0]?.datos_procesados || null
 
     // Clasificar con Haiku
     const clasificacion = await clasificarMensaje(texto)
@@ -116,6 +118,21 @@ export async function POST(request) {
     if (error) {
       console.error('[webhook] Error al guardar mensaje:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    // Notificar al empleado responsable si hay match de causa y tiene email
+    if (notificacion_id && datosCausa?.empleado_email) {
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://notificar-clara.vercel.app'
+      await enviarAlertaEmpleado({
+        to: datosCausa.empleado_email,
+        clasificacion,
+        texto,
+        telefono,
+        numero_causa: datosCausa?.datos_clave?.numero_causa || null,
+        tipo_acto: datosCausa?.tipo_acto || null,
+        urlPanel: `${baseUrl}/operador/mensajes`,
+        urlNotif: `${baseUrl}/n/${notificacion_id}`,
+      })
     }
 
     return NextResponse.json({ ok: true, clasificacion, matched: !!notificacion_id })

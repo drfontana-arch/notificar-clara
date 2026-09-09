@@ -22,6 +22,7 @@ export async function POST(request) {
       abogado_nombre,
       abogado_whatsapp,
       telefono_ciudadano,
+      empleado_email,
       es_primera_notificacion,
     } = body
 
@@ -49,6 +50,7 @@ export async function POST(request) {
     datos.abogado_whatsapp = abogado_whatsapp || ''
     datos.es_primera_notificacion = es_primera_notificacion || false
     datos.telefono_ciudadano = telefono_ciudadano ? telefono_ciudadano.replace(/\D/g, '') : ''
+    datos.empleado_email = empleado_email ? empleado_email.trim().toLowerCase() : ''
 
     // 2. Guardar en Supabase
     const id = uuidv4()
