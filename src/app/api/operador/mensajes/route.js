@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
+import { enviarAlertaEmpleado } from '@/lib/email'
 
 // GET /api/operador/mensajes?estado=pendiente|atendido|todos&limit=50&offset=0
 export async function GET(request) {
@@ -23,6 +24,9 @@ export async function GET(request) {
         nota_empleado,
         recibido_en,
         atendido_en,
+        derivado_a_email,
+        derivado_a_nombre,
+        derivado_en,
         notificaciones (
           tipo_acto,
           datos_procesados
@@ -52,7 +56,10 @@ export async function GET(request) {
       tipo_acto:     m.notificaciones?.tipo_acto || null,
       ciudadano:     m.notificaciones?.datos_procesados?.nombre_ciudadano || null,
       numero_causa:  m.notificaciones?.datos_procesados?.datos_clave?.numero_causa || null,
-      organo_emisor: m.notificaciones?.datos_procesados?.organo_emisor || null,
+      organo_emisor:      m.notificaciones?.datos_procesados?.organo_emisor || null,
+      derivado_a_email:   m.derivado_a_email || null,
+      derivado_a_nombre:  m.derivado_a_nombre || null,
+      derivado_en:        m.derivado_en || null,
     }))
 
     return NextResponse.json({ mensajes, total: count || 0 })
@@ -62,10 +69,10 @@ export async function GET(request) {
   }
 }
 
-// PATCH /api/operador/mensajes  →  marcar atendido o agregar nota
+// PATCH /api/operador/mensajes  →  marcar atendido, agregar nota, o derivar
 export async function PATCH(request) {
   try {
-    const { id, estado, nota_empleado } = await request.json()
+    const { id, estado, nota_empleado, derivar } = await request.json()
     if (!id) return NextResponse.json({ error: 'Falta id' }, { status: 400 })
 
     const db = supabaseAdmin()
@@ -81,6 +88,34 @@ export async function PATCH(request) {
 
     if (nota_empleado !== undefined) {
       cambios.nota_empleado = nota_empleado
+    }
+
+    // Derivación a otro empleado
+    if (derivar?.email) {
+      cambios.derivado_a_email  = derivar.email.trim().toLowerCase()
+      cambios.derivado_a_nombre = derivar.nombre?.trim() || derivar.email.trim()
+      cambios.derivado_en       = new Date().toISOString()
+
+      // Buscar datos del mensaje para armar el email
+      const { data: msg } = await db
+        .from('mensajes_whatsapp')
+        .select('texto, telefono_origen, clasificacion, notificacion_id, notificaciones(tipo_acto, datos_procesados)')
+        .eq('id', id)
+        .single()
+
+      if (msg) {
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://notificar-clara.vercel.app'
+        await enviarAlertaEmpleado({
+          to: derivar.email.trim(),
+          clasificacion: msg.clasificacion,
+          texto: msg.texto,
+          telefono: msg.telefono_origen,
+          numero_causa: msg.notificaciones?.datos_procesados?.datos_clave?.numero_causa || null,
+          tipo_acto: msg.notificaciones?.tipo_acto || null,
+          urlPanel: `${baseUrl}/operador/mensajes`,
+          urlNotif: msg.notificacion_id ? `${baseUrl}/n/${msg.notificacion_id}` : null,
+        })
+      }
     }
 
     if (Object.keys(cambios).length === 0) {

@@ -78,9 +78,16 @@ function FilaMensaje({ msg, seleccionado, onClick }) {
 function PanelDetalle({ msg, onActualizar }) {
   const [nota, setNota] = useState(msg.nota_empleado || '')
   const [guardando, setGuardando] = useState(false)
+  const [derivarEmail, setDerivarEmail] = useState('')
+  const [derivarNombre, setDerivarNombre] = useState('')
+  const [derivando, setDerivando] = useState(false)
+  const [derivadoOk, setDerivadoOk] = useState(false)
 
   useEffect(() => {
     setNota(msg.nota_empleado || '')
+    setDerivarEmail('')
+    setDerivarNombre('')
+    setDerivadoOk(!!msg.derivado_a_email)
   }, [msg.id])
 
   const marcar = async (nuevoEstado) => {
@@ -91,6 +98,19 @@ function PanelDetalle({ msg, onActualizar }) {
       body: JSON.stringify({ id: msg.id, estado: nuevoEstado }),
     })
     setGuardando(false)
+    onActualizar()
+  }
+
+  const derivar = async () => {
+    if (!derivarEmail.trim()) return
+    setDerivando(true)
+    await fetch('/api/operador/mensajes', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: msg.id, derivar: { email: derivarEmail, nombre: derivarNombre } }),
+    })
+    setDerivando(false)
+    setDerivadoOk(true)
     onActualizar()
   }
 
@@ -153,6 +173,42 @@ function PanelDetalle({ msg, onActualizar }) {
         <div className="bg-green-50 rounded-xl p-4 text-sm text-green-900 leading-relaxed">
           "{msg.texto}"
         </div>
+      </div>
+
+      {/* Derivación */}
+      <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-2">
+        <p className="text-xs text-gray-400 uppercase tracking-wide">Derivar a otro empleado</p>
+        {derivadoOk || msg.derivado_a_email ? (
+          <p className="text-sm text-green-700 font-medium bg-green-50 rounded-lg px-3 py-2">
+            ✓ Derivado a {msg.derivado_a_nombre || msg.derivado_a_email || derivarEmail}
+          </p>
+        ) : (
+          <div className="space-y-2">
+            <input
+              type="text"
+              value={derivarNombre}
+              onChange={(e) => setDerivarNombre(e.target.value)}
+              placeholder="Nombre del colega (opcional)"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#00C2C2] bg-white"
+            />
+            <div className="flex gap-2">
+              <input
+                type="email"
+                value={derivarEmail}
+                onChange={(e) => setDerivarEmail(e.target.value)}
+                placeholder="email@pjba.gob.ar"
+                className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#00C2C2] bg-white"
+              />
+              <button
+                onClick={derivar}
+                disabled={derivando || !derivarEmail.trim()}
+                className="px-4 py-2 rounded-lg bg-[#003366] hover:bg-[#004080] disabled:bg-gray-300 text-white text-sm font-semibold transition-colors whitespace-nowrap"
+              >
+                {derivando ? '...' : 'Enviar'}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <div>
