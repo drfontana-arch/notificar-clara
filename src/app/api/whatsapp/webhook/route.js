@@ -101,6 +101,7 @@ export async function POST(request) {
 
     const notificacion_id = notifs?.[0]?.id || null
     const datosCausa = notifs?.[0]?.datos_procesados || null
+    const numeroCausa = datosCausa?.datos_clave?.numero_causa || null
 
     // Clasificar con Haiku
     const clasificacion = await clasificarMensaje(texto)
@@ -120,22 +121,72 @@ export async function POST(request) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    // Notificar al empleado responsable si hay match de causa y tiene email
-    if (notificacion_id && datosCausa?.empleado_email) {
+    // ── Routing automático por reglas ──────────────────────────────
+    let destinatario = null
+
+    if (numeroCausa) {
+      // 1. Buscar la asignación de la causa (instancia + letrados)
+      const { data: asignaciones } = await db
+        .from('causas_letrados')
+        .select('rol_en_causa, instancia, letrado_id, letrados(nombre, email)')
+        .eq('numero_causa', numeroCausa)
+        .eq('activo', true)
+
+      if (asignaciones?.length) {
+        // Todas las asignaciones tienen la misma instancia
+        const instancia = asignaciones[0].instancia
+
+        // 2. Buscar la regla que aplica (instancia + clasificacion, o instancia + null)
+        const { data: reglas } = await db
+          .from('reglas_routing')
+          .select('rol_destino')
+          .eq('instancia', instancia)
+          .eq('activo', true)
+          .or(`clasificacion.eq.${clasificacion},clasificacion.is.null`)
+          .order('prioridad', { ascending: true })
+          .limit(1)
+
+        const rolDestino = reglas?.[0]?.rol_destino || null
+
+        if (rolDestino) {
+          // 3. Encontrar el letrado con ese rol en la causa
+          const match = asignaciones.find((a) => a.rol_en_causa === rolDestino)
+          if (match?.letrados?.email) {
+            destinatario = {
+              email: match.letrados.email,
+              nombre: match.letrados.nombre,
+            }
+          }
+        }
+      }
+    }
+
+    // Fallback: si no hay regla ni letrado, usar el email del empleado que cargó la notificación
+    if (!destinatario && datosCausa?.empleado_email) {
+      destinatario = { email: datosCausa.empleado_email, nombre: null }
+    }
+
+    // 4. Enviar email al destinatario encontrado
+    if (destinatario) {
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://notificar-clara.vercel.app'
       await enviarAlertaEmpleado({
-        to: datosCausa.empleado_email,
+        to: destinatario.email,
         clasificacion,
         texto,
         telefono,
-        numero_causa: datosCausa?.datos_clave?.numero_causa || null,
+        numero_causa: numeroCausa,
         tipo_acto: datosCausa?.tipo_acto || null,
         urlPanel: `${baseUrl}/operador/mensajes`,
-        urlNotif: `${baseUrl}/n/${notificacion_id}`,
+        urlNotif: notificacion_id ? `${baseUrl}/n/${notificacion_id}` : null,
       })
     }
 
-    return NextResponse.json({ ok: true, clasificacion, matched: !!notificacion_id })
+    return NextResponse.json({
+      ok: true,
+      clasificacion,
+      matched: !!notificacion_id,
+      derivado_a: destinatario?.email || null,
+    })
   } catch (err) {
     console.error('[webhook] Error inesperado:', err)
     return NextResponse.json({ error: err.message }, { status: 500 })
