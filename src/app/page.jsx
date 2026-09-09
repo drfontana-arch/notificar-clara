@@ -209,14 +209,6 @@ export default function PanelOperador() {
                 <input type="url" name="pdf_url" value={form.pdf_url} onChange={handleChange}
                   placeholder="https://drive.google.com/file/d/..." className={inputClass} />
               </Campo>
-              <Campo label="Teléfono WhatsApp del ciudadano" hint="Opcional — permite identificar sus respuestas automáticamente (formato internacional: 5492214XXXXXX)">
-                <input type="text" name="telefono_ciudadano" value={form.telefono_ciudadano} onChange={handleChange}
-                  placeholder="5492214XXXXXX" className={inputClass} />
-              </Campo>
-              <Campo label="Tu email (empleado/a responsable)" hint="Opcional — recibirás una alerta automática si el ciudadano responde por WhatsApp">
-                <input type="email" name="empleado_email" value={form.empleado_email} onChange={handleChange}
-                  placeholder="mi.nombre@pjba.gob.ar" className={inputClass} />
-              </Campo>
               <label className="flex items-start gap-2 text-sm text-gray-700 cursor-pointer bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
                 <input type="checkbox" name="es_primera_notificacion" checked={form.es_primera_notificacion} onChange={handleChange} className="rounded mt-0.5" />
                 <span>Primera notificación como imputado/a o demandado/a (sin defensa designada)</span>
