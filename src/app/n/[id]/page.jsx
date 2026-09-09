@@ -474,6 +474,58 @@ function FAQSection({ preguntas, notifId }) {
   )
 }
 
+function OptinTelefono({ notifId, altoContraste }) {
+  const [tel, setTel] = useState('')
+  const [estado, setEstado] = useState('idle') // idle | enviando | ok | error
+
+  const guardar = async () => {
+    if (!tel.trim()) return
+    setEstado('enviando')
+    try {
+      const res = await fetch('/api/telefono-ciudadano', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: notifId, telefono: tel }),
+      })
+      setEstado(res.ok ? 'ok' : 'error')
+    } catch {
+      setEstado('error')
+    }
+  }
+
+  if (estado === 'ok') return (
+    <div className={`rounded-xl p-4 mt-4 ${altoContraste ? 'bg-gray-800' : 'bg-green-50'}`}>
+      <p className="text-sm text-green-700 font-semibold">✓ Teléfono registrado. Si nos escribe por WhatsApp podremos identificar su consulta automáticamente.</p>
+    </div>
+  )
+
+  return (
+    <div className={`rounded-xl p-4 mt-4 border-l-4 border-gray-300 ${altoContraste ? 'bg-gray-800' : 'bg-gray-50'}`}>
+      <p className="text-xs font-bold uppercase text-gray-500 mb-1">💬 ¿Va a consultarnos por WhatsApp?</p>
+      <p className="text-sm text-gray-600 mb-3">
+        Si nos escribe al número de este organismo, podemos identificar su consulta automáticamente y asignarla a su expediente. Es completamente voluntario.
+      </p>
+      <div className="flex gap-2">
+        <input
+          type="tel"
+          value={tel}
+          onChange={(e) => setTel(e.target.value)}
+          placeholder="Ej: 5492214XXXXXX"
+          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
+        <button
+          onClick={guardar}
+          disabled={estado === 'enviando' || !tel.trim()}
+          className="bg-gray-700 hover:bg-gray-600 disabled:bg-gray-400 text-white font-semibold text-sm px-4 py-2 rounded-lg transition-colors"
+        >
+          {estado === 'enviando' ? '...' : 'Guardar'}
+        </button>
+      </div>
+      {estado === 'error' && <p className="text-xs text-red-600 mt-1">No se pudo guardar. Intente nuevamente.</p>}
+    </div>
+  )
+}
+
 export default function PaginaCiudadano() {
   const { id } = useParams()
   const [notif, setNotif] = useState(null)
@@ -921,6 +973,9 @@ export default function PaginaCiudadano() {
             )}
           </div>
         )}
+
+        {/* Opt-in teléfono WhatsApp — solo si no está registrado */}
+        {!d.telefono_ciudadano && <OptinTelefono notifId={id} altoContraste={altoContraste} />}
 
         <FooterRedMarea />
       </div>

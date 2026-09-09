@@ -43,6 +43,7 @@ export default function PanelOperador() {
     organo_whatsapp: '',
     abogado_nombre: '',
     abogado_whatsapp: '',
+    telefono_ciudadano: '',
     es_primera_notificacion: false,
     tiene_discapacidad: false,
     tipo_discapacidad: '',
@@ -206,6 +207,10 @@ export default function PanelOperador() {
               <Campo label="Link a la notificación formal (PDF)" hint="El ciudadano podrá abrirlo o enviárselo a su abogado/a">
                 <input type="url" name="pdf_url" value={form.pdf_url} onChange={handleChange}
                   placeholder="https://drive.google.com/file/d/..." className={inputClass} />
+              </Campo>
+              <Campo label="Teléfono WhatsApp del ciudadano" hint="Opcional — permite identificar sus respuestas automáticamente (formato internacional: 5492214XXXXXX)">
+                <input type="text" name="telefono_ciudadano" value={form.telefono_ciudadano} onChange={handleChange}
+                  placeholder="5492214XXXXXX" className={inputClass} />
               </Campo>
               <label className="flex items-start gap-2 text-sm text-gray-700 cursor-pointer bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
                 <input type="checkbox" name="es_primera_notificacion" checked={form.es_primera_notificacion} onChange={handleChange} className="rounded mt-0.5" />
