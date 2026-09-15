@@ -354,6 +354,45 @@ function CertificadoConcurrencia({ altoContraste }) {
   )
 }
 
+function FlechaScroll() {
+  const [visible, setVisible] = useState(true)
+
+  useEffect(() => {
+    const onScroll = () => { if (window.scrollY > 80) setVisible(false) }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  if (!visible) return null
+
+  return (
+    <div
+      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-1 pointer-events-none"
+      style={{ opacity: 0.75 }}
+    >
+      <span className="text-xs text-white font-medium drop-shadow" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>
+        Deslizá para ver más
+      </span>
+      <div
+        className="w-9 h-9 rounded-full bg-[#003366] flex items-center justify-center shadow-lg"
+        style={{
+          animation: 'bounce-suave 1.4s infinite',
+        }}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </div>
+      <style>{`
+        @keyframes bounce-suave {
+          0%, 100% { transform: translateY(0); }
+          50%       { transform: translateY(6px); }
+        }
+      `}</style>
+    </div>
+  )
+}
+
 function FooterRedMarea() {
   return (
     <footer className="mt-10 pb-8 text-center space-y-1 border-t border-gray-200 pt-6">
@@ -979,6 +1018,7 @@ export default function PaginaCiudadano() {
 
         <FooterRedMarea />
       </div>
+      <FlechaScroll />
     </main>
   )
 }
