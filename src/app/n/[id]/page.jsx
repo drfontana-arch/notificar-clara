@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useParams } from 'next/navigation'
 
 const VIDEO_EMBED_URL = 'https://drive.google.com/file/d/1izDkfcYIj9WzttgWZG7PTHjNvvpMx8EM/preview?autoplay=1'
-const VIDEO_DURACION_MS = 43000 // duración aprox. del video introductorio
+const VIDEO_DURACION_MS = 50000 // duración aprox. del video introductorio
 
 // ── Analytics ──────────────────────────────────────────────────────────────
 function detectarDispositivo() {
@@ -358,7 +358,10 @@ function FlechaScroll() {
   const [visible, setVisible] = useState(true)
 
   useEffect(() => {
-    const onScroll = () => { if (window.scrollY > 80) setVisible(false) }
+    const onScroll = () => {
+      const alFondo = window.innerHeight + window.scrollY >= document.body.scrollHeight - 40
+      setVisible(!alFondo)
+    }
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])

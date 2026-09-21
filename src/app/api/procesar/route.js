@@ -24,6 +24,7 @@ export async function POST(request) {
       telefono_ciudadano,
       empleado_email,
       es_primera_notificacion,
+      omitir_video,
       preview, // true → solo devuelve el texto de la IA, sin guardar ni generar QR
     } = body
 
@@ -50,6 +51,7 @@ export async function POST(request) {
     datos.abogado_nombre = abogado_nombre || ''
     datos.abogado_whatsapp = abogado_whatsapp || ''
     datos.es_primera_notificacion = es_primera_notificacion || false
+    datos.omitir_video = omitir_video || false
     datos.telefono_ciudadano = telefono_ciudadano ? telefono_ciudadano.replace(/\D/g, '') : ''
     datos.empleado_email = empleado_email ? empleado_email.trim().toLowerCase() : ''
 

@@ -53,6 +53,7 @@ export default function PanelOperador() {
     referente_nombre: '',
     referente_cargo: '',
     pdf_url: '',
+    omitir_video: false,
   })
   const [estado, setEstado] = useState('idle')
   const [resultado, setResultado] = useState(null)
@@ -269,6 +270,13 @@ export default function PanelOperador() {
               <label className="flex items-start gap-2 text-sm text-gray-700 cursor-pointer bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
                 <input type="checkbox" name="es_primera_notificacion" checked={form.es_primera_notificacion} onChange={handleChange} className="rounded mt-0.5" />
                 <span>Primera notificación como imputado/a o demandado/a (sin defensa designada)</span>
+              </label>
+              <label className="flex items-start gap-2 text-sm text-gray-700 cursor-pointer bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
+                <input type="checkbox" name="omitir_video" checked={form.omitir_video} onChange={handleChange} className="rounded mt-0.5" />
+                <div>
+                  <span className="font-medium">Omitir video introductorio</span>
+                  <p className="text-xs text-gray-400 mt-0.5">⚠️ Activar si la persona ya recibió previamente una notificación con NotificAR Clara y conoce el sistema</p>
+                </div>
               </label>
             </Paso>
           </div>
