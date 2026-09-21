@@ -59,6 +59,12 @@ export default function PanelOperador() {
   const [error, setError] = useState('')
   const [urgenciaOverride, setUrgenciaOverride] = useState(null)
   const [guardandoUrgencia, setGuardandoUrgencia] = useState(false)
+  // Mejora 2: revisión del texto antes de generar el QR
+  const [datosIA, setDatosIA] = useState(null)
+  const [tokensIA, setTokensIA] = useState({ entrada: 0, salida: 0 })
+  const [textoEditado, setTextoEditado] = useState('')
+  const [queDebeEditado, setQueDebeEditado] = useState('')
+  const [revisarAntes, setRevisarAntes] = useState(true)
 
   const cambiarUrgencia = async (nuevo) => {
     if (!resultado?.id) return
@@ -84,9 +90,10 @@ export default function PanelOperador() {
     setEstado('cargando')
     setError('')
     setResultado(null)
+    setDatosIA(null)
     setUrgenciaOverride(null)
     try {
-      const payload = {
+      const basePayload = {
         ...form,
         tipo_discapacidad: form.tiene_discapacidad ? (form.tipo_discapacidad || null) : null,
         transporte_publico: form.tiene_discapacidad ? form.transporte_publico : '',
@@ -94,7 +101,57 @@ export default function PanelOperador() {
         referente_nombre: form.tiene_discapacidad ? form.referente_nombre : '',
         referente_cargo: form.tiene_discapacidad ? form.referente_cargo : '',
       }
-      const res = await fetch('/api/procesar', {
+
+      if (revisarAntes) {
+        // MODO REVISIÓN: obtener texto de la IA sin guardar
+        const res = await fetch('/api/procesar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...basePayload, preview: true }),
+        })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error)
+        setDatosIA(data.datos)
+        setTokensIA({ entrada: data.tokens_entrada || 0, salida: data.tokens_salida || 0 })
+        setTextoEditado(data.datos?.explicacion_principal || '')
+        setQueDebeEditado((data.datos?.que_debe_hacer || []).join('\n'))
+        setEstado('revision')
+      } else {
+        // MODO DIRECTO: flujo original, guarda y genera QR de una
+        const res = await fetch('/api/procesar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(basePayload),
+        })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error)
+        setResultado(data)
+        setEstado('listo')
+      }
+    } catch (err) {
+      setError(err.message)
+      setEstado('error')
+    }
+  }
+
+  const handleConfirmar = async () => {
+    setEstado('confirmando')
+    setError('')
+    try {
+      const queDebeArray = queDebeEditado
+        .split('\n')
+        .map((s) => s.trim())
+        .filter(Boolean)
+      const payload = {
+        texto_original: form.texto_original,
+        tipo_acto: form.tipo_acto,
+        datos_ia: datosIA,
+        texto_operador: textoEditado,
+        que_debe_hacer_operador: queDebeArray,
+        tokens_entrada: tokensIA.entrada,
+        tokens_salida: tokensIA.salida,
+      }
+      const res = await fetch('/api/procesar-confirmar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -261,10 +318,24 @@ export default function PanelOperador() {
             )}
           </div>
 
+          {/* Opción de revisión */}
+          <label className="flex items-center gap-3 bg-white border border-gray-100 rounded-xl px-4 py-3 shadow-sm cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={revisarAntes}
+              onChange={(e) => setRevisarAntes(e.target.checked)}
+              className="rounded w-4 h-4 accent-[#003366]"
+            />
+            <div>
+              <p className="text-sm font-semibold text-[#003366]">✏️ Revisar texto antes de generar el QR</p>
+              <p className="text-xs text-gray-400">Podés corregir la explicación de la IA antes de enviársela al ciudadano</p>
+            </div>
+          </label>
+
           {/* Botón submit */}
           <button
             type="submit"
-            disabled={estado === 'cargando'}
+            disabled={estado === 'cargando' || estado === 'revision' || estado === 'confirmando'}
             className="w-full bg-[#003366] hover:bg-[#004080] disabled:bg-gray-400 text-white font-bold py-4 rounded-2xl transition-colors text-base shadow-lg flex items-center justify-center gap-3"
           >
             {estado === 'cargando' ? (
@@ -275,6 +346,8 @@ export default function PanelOperador() {
                 </svg>
                 Procesando con IA...
               </>
+            ) : estado === 'revision' ? (
+              <>✏️ Revisando texto antes de generar QR</>
             ) : (
               <>✨ Generar explicación y QR</>
             )}
@@ -300,7 +373,7 @@ export default function PanelOperador() {
           )}
 
           {/* Loading */}
-          {estado === 'cargando' && (
+          {(estado === 'cargando' || estado === 'confirmando') && (
             <div className="bg-white rounded-2xl border border-[#00C2C2] shadow-sm p-10 text-center">
               <div className="flex justify-center mb-4">
                 <svg className="animate-spin h-12 w-12 text-[#003366]" viewBox="0 0 24 24" fill="none">
@@ -308,12 +381,80 @@ export default function PanelOperador() {
                   <path className="opacity-80" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
                 </svg>
               </div>
-              <p className="font-bold text-[#003366] text-base mb-1">Clara está leyendo la notificación...</p>
-              <p className="text-xs text-gray-400">Analizando el texto y generando la explicación en lenguaje claro</p>
+              {estado === 'cargando' ? (
+                <>
+                  <p className="font-bold text-[#003366] text-base mb-1">Clara está leyendo la notificación...</p>
+                  <p className="text-xs text-gray-400">Analizando el texto y generando la explicación en lenguaje claro</p>
+                </>
+              ) : (
+                <>
+                  <p className="font-bold text-[#003366] text-base mb-1">Guardando y generando el QR...</p>
+                  <p className="text-xs text-gray-400">Un momento, estamos registrando la notificación</p>
+                </>
+              )}
               <div className="mt-4 flex justify-center gap-1">
-                {['Identificando tipo de acto', 'Adaptando al destinatario', 'Verificando urgencia', 'Generando QR'].map((paso, i) => (
+                {[0, 1, 2, 3].map((i) => (
                   <div key={i} className="w-2 h-2 rounded-full bg-[#00C2C2] animate-bounce" style={{ animationDelay: `${i * 150}ms` }} />
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* Revisión del texto antes de generar QR */}
+          {estado === 'revision' && datosIA && (
+            <div className="bg-white rounded-2xl shadow-sm border-2 border-[#00C2C2] p-6 space-y-5">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">✏️</span>
+                <div>
+                  <h2 className="font-bold text-[#003366] text-base leading-tight">Revisá el texto antes de generar el QR</h2>
+                  <p className="text-xs text-gray-400 mt-0.5">La IA generó la siguiente explicación. Corregila si hace falta.</p>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5 block">
+                  Explicación principal
+                </label>
+                <textarea
+                  value={textoEditado}
+                  onChange={(e) => setTextoEditado(e.target.value)}
+                  rows={6}
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#00C2C2] resize-y transition"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5 block">
+                  Qué debe hacer <span className="font-normal normal-case">(uno por línea)</span>
+                </label>
+                <textarea
+                  value={queDebeEditado}
+                  onChange={(e) => setQueDebeEditado(e.target.value)}
+                  rows={4}
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#00C2C2] resize-y transition"
+                />
+              </div>
+
+              {textoEditado !== datosIA.explicacion_principal && (
+                <div className="bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-xs text-amber-700">
+                  ✏️ Modificaste el texto original de la IA. Ambas versiones quedarán guardadas para mejorar el sistema.
+                </div>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  onClick={handleConfirmar}
+                  className="flex-1 bg-[#003366] hover:bg-[#004080] text-white font-bold py-3 rounded-xl transition-colors text-sm"
+                >
+                  ✅ Confirmar y generar QR
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setEstado('idle'); setDatosIA(null) }}
+                  className="text-sm text-gray-400 hover:text-gray-600 px-4 py-3 rounded-xl border border-gray-200 transition-colors whitespace-nowrap"
+                >
+                  ← Volver
+                </button>
               </div>
             </div>
           )}
@@ -412,7 +553,7 @@ export default function PanelOperador() {
 
               {/* Generar otra */}
               <button
-                onClick={() => { setEstado('idle'); setResultado(null) }}
+                onClick={() => { setEstado('idle'); setResultado(null); setDatosIA(null) }}
                 className="w-full text-center text-sm text-[#003366] hover:text-[#00C2C2] font-semibold py-2 transition-colors"
               >
                 ← Generar otra notificación

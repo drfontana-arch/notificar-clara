@@ -24,6 +24,7 @@ export async function POST(request) {
       telefono_ciudadano,
       empleado_email,
       es_primera_notificacion,
+      preview, // true → solo devuelve el texto de la IA, sin guardar ni generar QR
     } = body
 
     if (!texto_original || !tipo_acto) {
@@ -51,6 +52,11 @@ export async function POST(request) {
     datos.es_primera_notificacion = es_primera_notificacion || false
     datos.telefono_ciudadano = telefono_ciudadano ? telefono_ciudadano.replace(/\D/g, '') : ''
     datos.empleado_email = empleado_email ? empleado_email.trim().toLowerCase() : ''
+
+    // MODO PREVIEW: devolver solo el texto de la IA sin guardar nada
+    if (preview) {
+      return NextResponse.json({ datos, tokens_entrada, tokens_salida })
+    }
 
     // 2. Guardar en Supabase
     const id = uuidv4()

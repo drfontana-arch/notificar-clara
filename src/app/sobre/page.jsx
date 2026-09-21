@@ -3,6 +3,18 @@
 
 const VERSIONES = [
   {
+    version: 'v0.6',
+    fecha: 'Septiembre 2026',
+    cambios: [
+      'Revisión del texto antes de generar el QR: el operador puede corregir la explicación generada por la IA antes de enviársela al ciudadano. Ambas versiones (original IA + editada por operador) quedan guardadas para alimentar el loop de mejora continua del sistema.',
+      'Bandeja de mensajes WhatsApp con derivación a empleados o letrados: los mensajes entrantes se clasifican automáticamente por urgencia (rojo/amarillo/verde) y se derivan al responsable de la causa según las reglas de routing configuradas.',
+      'Módulo de routing automático: tabla de reglas por instancia procesal (IPP sin imputado, IPP con imputado, juicio, ejecución) que determina a qué rol derivar cada mensaje según su clasificación.',
+      'Sistema de agenda y citas: API para que mesa de entradas proponga turnos, el letrado confirme o modifique, y el ciudadano reciba la notificación por email.',
+      'Corrección de vocabulario en lenguaje claro: "comparecer" reemplazado por "presentarse/asistir" en todos los prompts. Indagatoria corregida: en PBA se presta ante el fiscal (art. 308 CPPBA), no ante el juez.',
+      'Flecha de desplazamiento flotante en la página ciudadana, visible hasta llegar al final del contenido.',
+    ],
+  },
+  {
     version: 'v0.5',
     fecha: 'Septiembre 2026',
     cambios: [
