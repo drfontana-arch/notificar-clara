@@ -151,7 +151,7 @@ export default function PanelEstadisticas() {
           <p className="text-blue-200 text-xs">Panel de análisis y registro de notificaciones</p>
         </div>
         <div className="flex gap-2">
-          <a href="/" className="text-blue-200 text-xs underline">← Volver al panel</a>
+          <a href="/operador" className="text-blue-200 text-xs underline">← Volver al panel</a>
           <button onClick={recargar} className="bg-blue-700 hover:bg-blue-600 text-white text-xs px-3 py-1.5 rounded-lg ml-3">
             ↺ Actualizar
           </button>

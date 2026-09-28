@@ -128,7 +128,7 @@ export default function SobrePage() {
             <p className="text-[#00C2C2] text-xs font-mono">MANUAL Y VERSIONES</p>
           </div>
         </div>
-        <a href="/" className="text-blue-200 text-xs underline hover:text-white">← Volver al panel</a>
+        <a href="/operador" className="text-blue-200 text-xs underline hover:text-white">← Volver al panel</a>
       </header>
 
       {/* Índice rápido */}

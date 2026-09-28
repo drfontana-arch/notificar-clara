@@ -1,585 +1,279 @@
 'use client'
 import { useState } from 'react'
-import { TIPOS_ACTO, TIPOS_DESTINATARIO, TIPOS_DISCAPACIDAD } from '@/lib/prompts/index.js'
 
-const URGENCIA = {
-  rojo:    { bg: 'bg-red-50',    border: 'border-red-400',    badge: 'bg-red-100 text-red-700',    emoji: '🔴', label: 'URGENTE' },
-  amarillo:{ bg: 'bg-yellow-50', border: 'border-yellow-400', badge: 'bg-yellow-100 text-yellow-700', emoji: '🟡', label: 'IMPORTANTE' },
-  verde:   { bg: 'bg-emerald-50',border: 'border-emerald-400',badge: 'bg-emerald-100 text-emerald-700',emoji: '🟢', label: 'Sin urgencia inmediata' },
-}
+const TABS = [
+  { id: 'inicio',       label: '🏠 Inicio' },
+  { id: 'autores',      label: '👥 Autores' },
+  { id: 'ponencia',     label: '📄 Ponencia' },
+  { id: 'operador',     label: '⚙️ Panel operador' },
+  { id: 'manual',       label: '📖 Manual' },
+  { id: 'estadisticas', label: '📊 Estadísticas' },
+]
 
-function Paso({ numero, titulo, children }) {
-  return (
-    <div className="relative">
-      <div className="flex items-center gap-3 mb-3">
-        <div className="w-7 h-7 rounded-full bg-[#003366] text-white text-xs font-bold flex items-center justify-center shrink-0">
-          {numero}
-        </div>
-        <h3 className="text-sm font-bold text-[#003366] uppercase tracking-wide">{titulo}</h3>
-      </div>
-      <div className="pl-10 space-y-3">{children}</div>
-    </div>
-  )
-}
+// ── Intro de Clara ────────────────────────────────────────
+const CLARA_INTRO = [
+  {
+    icono: '👋',
+    texto: 'Hola, soy Clara. Soy la inteligencia artificial que está detrás de este sistema. Mi trabajo es leer notificaciones judiciales — escritas en lenguaje técnico y formal — y transformarlas en explicaciones que cualquier persona pueda entender.',
+  },
+  {
+    icono: '⚖️',
+    texto: 'En la Argentina, cientos de miles de personas reciben cada año una cédula judicial sin saber qué significa, qué tienen que hacer ni cuándo. Eso no es solo una barrera de comprensión: es una barrera de acceso a la justicia.',
+  },
+  {
+    icono: '📱',
+    texto: 'El operador judicial pega el texto de la notificación en el panel, yo lo proceso en segundos y genero una explicación en lenguaje claro. El sistema produce un código QR que se imprime junto a la cédula. La persona lo escanea con su celular y accede a su propia página: qué le están diciendo, qué tiene que hacer, cuándo y cómo comunicarse con el juzgado o con su abogado/a.',
+  },
+  {
+    icono: '♿',
+    texto: 'Si la persona tiene una discapacidad declarada, el sistema adapta automáticamente la información: accesibilidad visual, auditiva o intelectual, información sobre transporte accesible, datos del referente de atención personalizada y botón para solicitar acompañante. Todo conforme a las Reglas de Brasilia y la Convención sobre los Derechos de las Personas con Discapacidad.',
+  },
+  {
+    icono: '🔬',
+    texto: 'NotificAR Clara es un prototipo piloto desarrollado por Red Marea D+I para el Congreso de Habla Hispana de La Plata 2026. Está construido con tecnología 100% disponible hoy, sin necesidad de grandes inversiones de infraestructura, y es adaptable a cualquier fuero o jurisdicción.',
+  },
+]
 
-function Campo({ label, hint, children }) {
-  return (
-    <div>
-      <label className="block text-sm font-semibold text-gray-700 mb-1">{label}</label>
-      {children}
-      {hint && <p className="text-xs text-gray-400 mt-1">{hint}</p>}
-    </div>
-  )
-}
+// ── Autores ───────────────────────────────────────────────
+const AUTORES = [
+  {
+    nombre: 'Enzo Fontana',
+    email: 'dr.fontana@gmail.com',
+    foto: null, // reemplazar con '/autores/enzo.jpg' cuando esté disponible
+    cv: 'Abogado. Integrante de Red Marea D+I. Especialista en derecho e innovación tecnológica.',
+  },
+  {
+    nombre: 'Laura Bulesevich',
+    email: 'bulesevichlaura@gmail.com',
+    foto: null, // reemplazar con '/autores/laura.jpg' cuando esté disponible
+    cv: 'Abogada. Integrante de Red Marea D+I.',
+  },
+]
 
-const inputClass = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#00C2C2] bg-white transition"
+// ── Ponencia ──────────────────────────────────────────────
+// Reemplazar con el texto completo cuando esté disponible
+const PONENCIA_RESUMEN = `NotificAR Clara propone integrar inteligencia artificial al proceso de notificación judicial en la Provincia de Buenos Aires, con el objetivo de garantizar el acceso efectivo a la justicia de personas en condición de vulnerabilidad.
 
-export default function PanelOperador() {
-  const [form, setForm] = useState({
-    texto_original: '',
-    tipo_acto: 'testimonial',
-    tipo_destinatario: 'actor',
-    organo_emisor: '',
-    organo_whatsapp: '',
-    abogado_nombre: '',
-    abogado_whatsapp: '',
-    telefono_ciudadano: '',
-    empleado_email: '',
-    es_primera_notificacion: false,
-    tiene_discapacidad: false,
-    tipo_discapacidad: '',
-    transporte_publico: '',
-    acceso_accesible: '',
-    referente_nombre: '',
-    referente_cargo: '',
-    pdf_url: '',
-    omitir_video: false,
-  })
-  const [estado, setEstado] = useState('idle')
-  const [resultado, setResultado] = useState(null)
-  const [error, setError] = useState('')
-  const [urgenciaOverride, setUrgenciaOverride] = useState(null)
-  const [guardandoUrgencia, setGuardandoUrgencia] = useState(false)
-  // Mejora 2: revisión del texto antes de generar el QR
-  const [datosIA, setDatosIA] = useState(null)
-  const [tokensIA, setTokensIA] = useState({ entrada: 0, salida: 0 })
-  const [textoEditado, setTextoEditado] = useState('')
-  const [queDebeEditado, setQueDebeEditado] = useState('')
-  const [revisarAntes, setRevisarAntes] = useState(true)
+El sistema parte de una premisa simple: el derecho a ser notificado no se agota en la entrega formal del papel. Implica también el derecho a comprender qué dice ese papel. Sin comprensión no hay ejercicio efectivo del derecho de defensa, no hay acceso real a la justicia.
 
-  const cambiarUrgencia = async (nuevo) => {
-    if (!resultado?.id) return
-    setGuardandoUrgencia(true)
-    try {
-      await fetch('/api/notificacion', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: resultado.id, nivel_urgencia: nuevo }),
-      })
-      setUrgenciaOverride(nuevo)
-    } catch {}
-    setGuardandoUrgencia(false)
-  }
+La propuesta combina: (1) procesamiento de lenguaje natural mediante IA (Claude Haiku 4.5, Anthropic) para traducir el lenguaje jurídico a lenguaje claro; (2) generación automática de un código QR por cada notificación; (3) una página web ciudadana accesible desde el celular que incluye explicación adaptada, guía de acciones, contacto directo con el órgano emisor y ajustes razonables para personas con discapacidad; y (4) un canal de WhatsApp para consultas de los ciudadanos con derivación automática al área responsable.
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target
-    setForm((f) => ({ ...f, [name]: type === 'checkbox' ? checked : value }))
-  }
+El sistema está diseñado conforme a las Reglas de Brasilia (reglas 58 a 61), la Ley Provincial 15.184 y la Resolución SC 1131/26 de la SCBA, y puede ser implementado con tecnología disponible en la actualidad, sin requerir modificaciones legislativas previas.`
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setEstado('cargando')
-    setError('')
-    setResultado(null)
-    setDatosIA(null)
-    setUrgenciaOverride(null)
-    try {
-      const basePayload = {
-        ...form,
-        tipo_discapacidad: form.tiene_discapacidad ? (form.tipo_discapacidad || null) : null,
-        transporte_publico: form.tiene_discapacidad ? form.transporte_publico : '',
-        acceso_accesible: form.tiene_discapacidad ? form.acceso_accesible : '',
-        referente_nombre: form.tiene_discapacidad ? form.referente_nombre : '',
-        referente_cargo: form.tiene_discapacidad ? form.referente_cargo : '',
-      }
-
-      if (revisarAntes) {
-        // MODO REVISIÓN: obtener texto de la IA sin guardar
-        const res = await fetch('/api/procesar', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...basePayload, preview: true }),
-        })
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.error)
-        setDatosIA(data.datos)
-        setTokensIA({ entrada: data.tokens_entrada || 0, salida: data.tokens_salida || 0 })
-        setTextoEditado(data.datos?.explicacion_principal || '')
-        setQueDebeEditado((data.datos?.que_debe_hacer || []).join('\n'))
-        setEstado('revision')
-      } else {
-        // MODO DIRECTO: flujo original, guarda y genera QR de una
-        const res = await fetch('/api/procesar', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(basePayload),
-        })
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.error)
-        setResultado(data)
-        setEstado('listo')
-      }
-    } catch (err) {
-      setError(err.message)
-      setEstado('error')
-    }
-  }
-
-  const handleConfirmar = async () => {
-    setEstado('confirmando')
-    setError('')
-    try {
-      const queDebeArray = queDebeEditado
-        .split('\n')
-        .map((s) => s.trim())
-        .filter(Boolean)
-      const payload = {
-        texto_original: form.texto_original,
-        tipo_acto: form.tipo_acto,
-        datos_ia: datosIA,
-        texto_operador: textoEditado,
-        que_debe_hacer_operador: queDebeArray,
-        tokens_entrada: tokensIA.entrada,
-        tokens_salida: tokensIA.salida,
-      }
-      const res = await fetch('/api/procesar-confirmar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
-      setResultado(data)
-      setEstado('listo')
-    } catch (err) {
-      setError(err.message)
-      setEstado('error')
-    }
-  }
-
-  const urgenciaActual = urgenciaOverride || resultado?.datos?.nivel_urgencia
-  const urg = URGENCIA[urgenciaActual] || URGENCIA.verde
+// ── Componente principal ──────────────────────────────────
+export default function LandingPage() {
+  const [tabActiva, setTabActiva] = useState('inicio')
 
   return (
     <div className="min-h-screen bg-[#f0f4f8] flex flex-col">
 
-      {/* ── Header ─────────────────────────────────────── */}
-      <header className="bg-[#003366] text-white px-6 py-3 shadow-lg flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-[#00C2C2] flex items-center justify-center font-bold text-white text-base">C</div>
-          <div>
-            <p className="font-bold text-base leading-tight">NotificAR Clara</p>
-            <p className="text-[#00C2C2] text-xs font-mono">PANEL DEL OPERADOR JUDICIAL</p>
+      {/* ── Header ── */}
+      <header className="bg-[#003366] text-white px-6 py-4 shadow-lg">
+        <div className="max-w-5xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#00C2C2] flex items-center justify-center font-bold text-white text-lg">C</div>
+            <div>
+              <p className="font-bold text-lg leading-tight">NotificAR Clara</p>
+              <p className="text-[#00C2C2] text-xs font-mono tracking-wide">RED MAREA D+I · notificarclara.ar</p>
+            </div>
           </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-blue-300 hidden sm:block">Provincia de Buenos Aires</span>
-          <a
-            href="/sobre"
-            className="flex items-center gap-1.5 bg-blue-800 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
-          >
-            📖 Manual
-          </a>
-          <a
-            href="/admin/estadisticas"
-            className="flex items-center gap-1.5 bg-[#00C2C2] hover:bg-teal-400 text-[#003366] text-xs font-bold px-3 py-2 rounded-lg transition-colors"
-          >
-            📊 Estadísticas
-          </a>
+          <p className="text-xs text-blue-300 hidden sm:block text-right">
+            Congreso de Habla Hispana<br />La Plata · Octubre 2026
+          </p>
         </div>
       </header>
 
-      {/* ── Cuerpo — layout de dos columnas en desktop ── */}
-      <div className="flex-1 max-w-6xl mx-auto w-full px-4 py-6 grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+      {/* ── Tabs ── */}
+      <nav className="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-30">
+        <div className="max-w-5xl mx-auto px-4 flex overflow-x-auto gap-1 py-2 scrollbar-hide">
+          {TABS.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setTabActiva(tab.id)}
+              className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-semibold transition-colors shrink-0 ${
+                tabActiva === tab.id
+                  ? 'bg-[#003366] text-white'
+                  : 'text-gray-500 hover:bg-gray-100 hover:text-[#003366]'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </nav>
 
-        {/* ── COLUMNA IZQUIERDA: Formulario ──────────── */}
-        <form onSubmit={handleSubmit} className="space-y-5">
+      {/* ── Contenido ── */}
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8">
 
-          {/* Card principal */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-6">
+        {/* ── INICIO ── */}
+        {tabActiva === 'inicio' && (
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <h1 className="text-2xl font-bold text-[#003366] mb-2">Notificaciones judiciales en lenguaje claro</h1>
+              <p className="text-gray-500 text-sm max-w-xl mx-auto">
+                Un sistema de inteligencia artificial para garantizar el acceso efectivo a la justicia en la Provincia de Buenos Aires.
+              </p>
+            </div>
 
-            <Paso numero="1" titulo="Tipo de acto y destinatario">
-              <Campo label="Tipo de acto procesal *">
-                <select name="tipo_acto" value={form.tipo_acto} onChange={handleChange} className={inputClass}>
-                  {TIPOS_ACTO.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-                </select>
-              </Campo>
-              <Campo label="Destinatario de la notificación *">
-                <select name="tipo_destinatario" value={form.tipo_destinatario} onChange={handleChange} className={inputClass}>
-                  {TIPOS_DESTINATARIO.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-                </select>
-                {(form.tipo_destinatario === 'letrado' || form.tipo_destinatario === 'perito') && (
-                  <p className="text-xs text-amber-600 mt-1 bg-amber-50 rounded-lg px-2 py-1.5">
-                    ⚠️ Para este destinatario se genera solo el triage de urgencia.
-                  </p>
-                )}
-              </Campo>
-            </Paso>
-
-            <div className="border-t border-dashed border-gray-100" />
-
-            <Paso numero="2" titulo="Texto de la notificación">
-              <Campo label="Pegá el texto completo de la cédula o resolución *">
-                <textarea
-                  name="texto_original"
-                  value={form.texto_original}
-                  onChange={handleChange}
-                  rows={7}
-                  placeholder="JUZGADO... / Causa N°... / RESOLUCIÓN..."
-                  className={`${inputClass} resize-y font-mono text-xs leading-relaxed`}
-                  required
-                />
-              </Campo>
-            </Paso>
-
-            <div className="border-t border-dashed border-gray-100" />
-
-            <Paso numero="3" titulo="Datos de contacto">
-              <div className="grid grid-cols-2 gap-3">
-                <Campo label="Órgano emisor">
-                  <input type="text" name="organo_emisor" value={form.organo_emisor} onChange={handleChange}
-                    placeholder="Juzgado / Fiscalía..." className={inputClass} />
-                </Campo>
-                <Campo label="WhatsApp del órgano">
-                  <input type="text" name="organo_whatsapp" value={form.organo_whatsapp} onChange={handleChange}
-                    placeholder="5492214XXXXXX" className={inputClass} />
-                </Campo>
-                <Campo label="Abogado/a (si tiene)">
-                  <input type="text" name="abogado_nombre" value={form.abogado_nombre} onChange={handleChange}
-                    placeholder="Nombre y apellido" className={inputClass} />
-                </Campo>
-                <Campo label="WhatsApp del abogado/a">
-                  <input type="text" name="abogado_whatsapp" value={form.abogado_whatsapp} onChange={handleChange}
-                    placeholder="5492215XXXXXX" className={inputClass} />
-                </Campo>
-              </div>
-              <Campo label="Link a la notificación formal (PDF)" hint="El ciudadano podrá abrirlo o enviárselo a su abogado/a">
-                <input type="url" name="pdf_url" value={form.pdf_url} onChange={handleChange}
-                  placeholder="https://drive.google.com/file/d/..." className={inputClass} />
-              </Campo>
-              <label className="flex items-start gap-2 text-sm text-gray-700 cursor-pointer bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5">
-                <input type="checkbox" name="es_primera_notificacion" checked={form.es_primera_notificacion} onChange={handleChange} className="rounded mt-0.5" />
-                <span>Primera notificación como imputado/a o demandado/a (sin defensa designada)</span>
-              </label>
-              <label className="flex items-start gap-2 text-sm text-gray-700 cursor-pointer bg-gray-50 border border-gray-200 rounded-lg px-3 py-2.5">
-                <input type="checkbox" name="omitir_video" checked={form.omitir_video} onChange={handleChange} className="rounded mt-0.5" />
+            {/* Clara presenta el sistema */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-5">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-10 h-10 rounded-full bg-[#003366] text-white flex items-center justify-center font-bold text-base shrink-0">C</div>
                 <div>
-                  <span className="font-medium">Omitir video introductorio</span>
-                  <p className="text-xs text-gray-400 mt-0.5">⚠️ Activar si la persona ya recibió previamente una notificación con NotificAR Clara y conoce el sistema</p>
+                  <p className="font-bold text-[#003366]">Clara</p>
+                  <p className="text-xs text-gray-400 font-mono">Asistente de NotificAR Clara · IA</p>
                 </div>
-              </label>
-            </Paso>
-          </div>
-
-          {/* Card ajuste razonable */}
-          <div className={`rounded-2xl border-2 p-5 transition-colors ${form.tiene_discapacidad ? 'bg-blue-50 border-[#00C2C2]' : 'bg-white border-gray-100 shadow-sm'}`}>
-            <label className="flex items-center gap-3 cursor-pointer">
-              <input type="checkbox" name="tiene_discapacidad" checked={form.tiene_discapacidad} onChange={handleChange} className="rounded w-4 h-4 accent-[#003366]" />
-              <div>
-                <p className="font-bold text-[#003366] text-sm">🔵 Ajuste razonable (Reglas de Brasilia)</p>
-                <p className="text-xs text-gray-500">Activar si la persona destinataria tiene una discapacidad declarada</p>
               </div>
-            </label>
-
-            {form.tiene_discapacidad && (
-              <div className="mt-4 space-y-3 pt-4 border-t border-blue-200">
-                <Campo label="Tipo de discapacidad *">
-                  <select name="tipo_discapacidad" value={form.tipo_discapacidad} onChange={handleChange} className={inputClass}>
-                    <option value="">— Seleccionar —</option>
-                    {TIPOS_DISCAPACIDAD.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-                  </select>
-                </Campo>
-                {form.tipo_discapacidad === 'intelectual' && (
-                  <div className="bg-amber-50 border border-amber-300 rounded-lg p-3 text-xs text-amber-800">
-                    ⚠️ Se recomienda notificador/a con formación especializada o apoyo del equipo técnico interdisciplinario.
+              <div className="space-y-4 pl-1">
+                {CLARA_INTRO.map((bloque, i) => (
+                  <div key={i} className="flex gap-3 items-start">
+                    <span className="text-xl shrink-0 mt-0.5">{bloque.icono}</span>
+                    <p className="text-sm text-gray-700 leading-relaxed">{bloque.texto}</p>
                   </div>
-                )}
-                <div className="grid grid-cols-2 gap-3">
-                  <Campo label="Transporte público">
-                    <input type="text" name="transporte_publico" value={form.transporte_publico} onChange={handleChange}
-                      placeholder="Línea 202 ramal A..." className={inputClass} />
-                  </Campo>
-                  <Campo label="Acceso accesible">
-                    <input type="text" name="acceso_accesible" value={form.acceso_accesible} onChange={handleChange}
-                      placeholder="Rampa en entrada lateral..." className={inputClass} />
-                  </Campo>
-                  <Campo label="Referente — nombre">
-                    <input type="text" name="referente_nombre" value={form.referente_nombre} onChange={handleChange}
-                      placeholder="Ej: María González" className={inputClass} />
-                  </Campo>
-                  <Campo label="Referente — cargo">
-                    <input type="text" name="referente_cargo" value={form.referente_cargo} onChange={handleChange}
-                      placeholder="Trabajadora social" className={inputClass} />
-                  </Campo>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Opción de revisión */}
-          <label className="flex items-center gap-3 bg-white border border-gray-100 rounded-xl px-4 py-3 shadow-sm cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={revisarAntes}
-              onChange={(e) => setRevisarAntes(e.target.checked)}
-              className="rounded w-4 h-4 accent-[#003366]"
-            />
-            <div>
-              <p className="text-sm font-semibold text-[#003366]">✏️ Revisar texto antes de generar el QR</p>
-              <p className="text-xs text-gray-400">Podés corregir la explicación de la IA antes de enviársela al ciudadano</p>
-            </div>
-          </label>
-
-          {/* Botón submit */}
-          <button
-            type="submit"
-            disabled={estado === 'cargando' || estado === 'revision' || estado === 'confirmando'}
-            className="w-full bg-[#003366] hover:bg-[#004080] disabled:bg-gray-400 text-white font-bold py-4 rounded-2xl transition-colors text-base shadow-lg flex items-center justify-center gap-3"
-          >
-            {estado === 'cargando' ? (
-              <>
-                <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-                </svg>
-                Procesando con IA...
-              </>
-            ) : estado === 'revision' ? (
-              <>✏️ Revisando texto antes de generar QR</>
-            ) : (
-              <>✨ Generar explicación y QR</>
-            )}
-          </button>
-
-          {estado === 'error' && (
-            <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700 text-center">
-              {error}
-            </div>
-          )}
-        </form>
-
-        {/* ── COLUMNA DERECHA: Resultado / Estado vacío ── */}
-        <div className="lg:sticky lg:top-6 space-y-4">
-
-          {/* Estado vacío */}
-          {estado === 'idle' && (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center text-gray-400">
-              <div className="text-5xl mb-4">📋</div>
-              <p className="font-semibold text-gray-500 mb-1">El QR y la explicación aparecerán aquí</p>
-              <p className="text-xs">Completá el formulario y hacé clic en "Generar"</p>
-            </div>
-          )}
-
-          {/* Loading */}
-          {(estado === 'cargando' || estado === 'confirmando') && (
-            <div className="bg-white rounded-2xl border border-[#00C2C2] shadow-sm p-10 text-center">
-              <div className="flex justify-center mb-4">
-                <svg className="animate-spin h-12 w-12 text-[#003366]" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                  <path className="opacity-80" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-                </svg>
-              </div>
-              {estado === 'cargando' ? (
-                <>
-                  <p className="font-bold text-[#003366] text-base mb-1">Clara está leyendo la notificación...</p>
-                  <p className="text-xs text-gray-400">Analizando el texto y generando la explicación en lenguaje claro</p>
-                </>
-              ) : (
-                <>
-                  <p className="font-bold text-[#003366] text-base mb-1">Guardando y generando el QR...</p>
-                  <p className="text-xs text-gray-400">Un momento, estamos registrando la notificación</p>
-                </>
-              )}
-              <div className="mt-4 flex justify-center gap-1">
-                {[0, 1, 2, 3].map((i) => (
-                  <div key={i} className="w-2 h-2 rounded-full bg-[#00C2C2] animate-bounce" style={{ animationDelay: `${i * 150}ms` }} />
                 ))}
               </div>
             </div>
-          )}
 
-          {/* Revisión del texto antes de generar QR */}
-          {estado === 'revision' && datosIA && (
-            <div className="bg-white rounded-2xl shadow-sm border-2 border-[#00C2C2] p-6 space-y-5">
-              <div className="flex items-center gap-2">
-                <span className="text-xl">✏️</span>
-                <div>
-                  <h2 className="font-bold text-[#003366] text-base leading-tight">Revisá el texto antes de generar el QR</h2>
-                  <p className="text-xs text-gray-400 mt-0.5">La IA generó la siguiente explicación. Corregila si hace falta.</p>
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5 block">
-                  Explicación principal
-                </label>
-                <textarea
-                  value={textoEditado}
-                  onChange={(e) => setTextoEditado(e.target.value)}
-                  rows={6}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#00C2C2] resize-y transition"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5 block">
-                  Qué debe hacer <span className="font-normal normal-case">(uno por línea)</span>
-                </label>
-                <textarea
-                  value={queDebeEditado}
-                  onChange={(e) => setQueDebeEditado(e.target.value)}
-                  rows={4}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-[#00C2C2] resize-y transition"
-                />
-              </div>
-
-              {textoEditado !== datosIA.explicacion_principal && (
-                <div className="bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-xs text-amber-700">
-                  ✏️ Modificaste el texto original de la IA. Ambas versiones quedarán guardadas para mejorar el sistema.
-                </div>
-              )}
-
-              <div className="flex gap-3">
-                <button
-                  onClick={handleConfirmar}
-                  className="flex-1 bg-[#003366] hover:bg-[#004080] text-white font-bold py-3 rounded-xl transition-colors text-sm"
-                >
-                  ✅ Confirmar y generar QR
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setEstado('idle'); setDatosIA(null) }}
-                  className="text-sm text-gray-400 hover:text-gray-600 px-4 py-3 rounded-xl border border-gray-200 transition-colors whitespace-nowrap"
-                >
-                  ← Volver
-                </button>
-              </div>
+            {/* Accesos rápidos */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
+              {[
+                { label: 'Panel del operador', desc: 'Generar notificaciones', href: '/operador', color: 'bg-[#003366] text-white' },
+                { label: 'Vista ciudadano', desc: 'Demo de ejemplo', href: '/n/demo', color: 'bg-[#00C2C2] text-[#003366]' },
+                { label: 'Estadísticas', desc: 'Actividad del sistema', href: '/admin/estadisticas', color: 'bg-white text-[#003366] border border-gray-200' },
+                { label: 'Manual', desc: 'Guía del operador', href: '/sobre', color: 'bg-white text-[#003366] border border-gray-200' },
+                { label: 'Mensajes WhatsApp', desc: 'Bandeja de mensajes', href: '/operador/mensajes', color: 'bg-white text-[#003366] border border-gray-200' },
+                { label: 'Ponencia', desc: 'Congreso 2026', onclick: () => setTabActiva('ponencia'), color: 'bg-white text-[#003366] border border-gray-200' },
+              ].map((item, i) => (
+                item.href ? (
+                  <a key={i} href={item.href} className={`${item.color} rounded-xl p-4 shadow-sm font-semibold text-sm hover:opacity-90 transition-opacity`}>
+                    <p className="font-bold">{item.label}</p>
+                    <p className="text-xs opacity-70 mt-0.5">{item.desc}</p>
+                  </a>
+                ) : (
+                  <button key={i} onClick={item.onclick} className={`${item.color} rounded-xl p-4 shadow-sm font-semibold text-sm hover:opacity-90 transition-opacity text-left w-full`}>
+                    <p className="font-bold">{item.label}</p>
+                    <p className="text-xs opacity-70 mt-0.5">{item.desc}</p>
+                  </button>
+                )
+              ))}
             </div>
-          )}
-
-          {/* Resultado */}
-          {estado === 'listo' && resultado && (
-            <div className="space-y-4">
-
-              {/* Badge de urgencia */}
-              <div className={`rounded-2xl border-l-4 p-4 ${urg.bg} ${urg.border}`}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className={`text-xs font-bold px-2 py-1 rounded-full ${urg.badge}`}>
-                    {urg.emoji} {urg.label}
-                  </span>
-                  <span className="text-xs text-gray-400 font-mono">{resultado.datos?.tipo_acto}</span>
-                </div>
-                <h2 className="font-bold text-[#003366] text-base leading-snug">
-                  {resultado.datos?.titulo_explicacion}
-                </h2>
-                {resultado.datos?.motivo_urgencia && (
-                  <p className="text-xs text-gray-600 mt-1">{resultado.datos.motivo_urgencia}</p>
-                )}
-                {/* Selector manual de urgencia */}
-                <div className="mt-3 pt-3 border-t border-gray-200">
-                  <p className="text-xs text-gray-500 mb-2">
-                    {guardandoUrgencia ? 'Guardando...' : 'Ajustar urgencia manualmente:'}
-                  </p>
-                  <div className="flex gap-2">
-                    {[
-                      { value: 'rojo',    emoji: '🔴', label: 'Urgente' },
-                      { value: 'amarillo',emoji: '🟡', label: 'Importante' },
-                      { value: 'verde',   emoji: '🟢', label: 'Sin urgencia' },
-                    ].map(({ value, emoji, label }) => (
-                      <button
-                        key={value}
-                        onClick={() => cambiarUrgencia(value)}
-                        disabled={guardandoUrgencia}
-                        className={`flex-1 text-xs py-1.5 rounded-lg font-semibold border-2 transition-colors ${
-                          urgenciaActual === value
-                            ? 'border-[#003366] bg-[#003366] text-white'
-                            : 'border-gray-200 bg-white text-gray-600 hover:border-gray-400'
-                        }`}
-                      >
-                        {emoji} {label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* QR */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                <p className="text-xs font-bold text-[#003366] uppercase tracking-wide mb-4 text-center">Código QR generado</p>
-                <div className="flex flex-col items-center gap-4">
-                  <div className="p-3 bg-white border-2 border-[#003366] rounded-2xl shadow">
-                    <img src={resultado.qr} alt="Código QR" className="w-44 h-44" />
-                  </div>
-                  <div className="flex gap-2 w-full">
-                    <a
-                      href={resultado.qr}
-                      download="notificar-clara-qr.png"
-                      className="flex-1 text-center bg-[#003366] hover:bg-[#004080] text-white px-4 py-2.5 rounded-xl text-sm font-bold transition-colors"
-                    >
-                      ⬇ Descargar QR
-                    </a>
-                    <a
-                      href={resultado.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 text-center bg-[#00C2C2] hover:bg-teal-400 text-[#003366] px-4 py-2.5 rounded-xl text-sm font-bold transition-colors"
-                    >
-                      ↗ Abrir vista ciudadano
-                    </a>
-                  </div>
-                  <p className="text-xs text-gray-400 font-mono break-all text-center">{resultado.url}</p>
-                </div>
-              </div>
-
-              {/* Preview explicación */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Vista previa — explicación generada</p>
-                <p className="text-sm text-gray-700 leading-relaxed">{resultado.datos?.explicacion_principal}</p>
-                {resultado.datos?.que_debe_hacer?.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-gray-100">
-                    <p className="text-xs font-bold text-green-700 uppercase mb-2">Qué debe hacer</p>
-                    <ul className="space-y-1">
-                      {resultado.datos.que_debe_hacer.map((item, i) => (
-                        <li key={i} className="flex gap-2 text-sm text-gray-700">
-                          <span className="text-green-500 mt-0.5">✓</span><span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-
-              {/* Generar otra */}
-              <button
-                onClick={() => { setEstado('idle'); setResultado(null); setDatosIA(null) }}
-                className="w-full text-center text-sm text-[#003366] hover:text-[#00C2C2] font-semibold py-2 transition-colors"
-              >
-                ← Generar otra notificación
-              </button>
-            </div>
-          )}
-
-          {/* Pie de marca */}
-          <div className="text-center pt-2 space-y-0.5">
-            <p className="text-xs text-gray-400 font-mono uppercase tracking-widest">Red Marea D+I</p>
-            <p className="text-xs text-gray-400">
-              Enzo Fontana · <a href="mailto:dr.fontana@gmail.com" className="hover:underline">dr.fontana@gmail.com</a>
-              {' '}· Laura Bulesevich · <a href="mailto:bulesevichlaura@gmail.com" className="hover:underline">bulesevichlaura@gmail.com</a>
-            </p>
-            <p className="text-xs text-gray-300">NotificAR Clara — Provincia de Buenos Aires</p>
           </div>
-        </div>
-      </div>
+        )}
+
+        {/* ── AUTORES ── */}
+        {tabActiva === 'autores' && (
+          <div className="space-y-6">
+            <h2 className="text-xl font-bold text-[#003366]">Autores</h2>
+            <div className="bg-white rounded-2xl p-4 mb-4 border-l-4 border-[#00C2C2] shadow-sm">
+              <p className="text-sm text-gray-600">
+                Proyecto presentado en el <strong>Congreso de Habla Hispana · La Plata, octubre 2026</strong>, en el marco de <strong>Red Marea D+I</strong> — colectivo de colaboración intelectual que intersecciona derecho e innovación.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {AUTORES.map((autor) => (
+                <div key={autor.nombre} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col items-center text-center gap-4">
+                  {autor.foto ? (
+                    <img src={autor.foto} alt={autor.nombre} className="w-28 h-28 rounded-full object-cover border-4 border-[#003366]" />
+                  ) : (
+                    <div className="w-28 h-28 rounded-full bg-[#003366] flex items-center justify-center text-white text-4xl font-bold border-4 border-[#00C2C2]">
+                      {autor.nombre.charAt(0)}
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="font-bold text-[#003366] text-lg">{autor.nombre}</h3>
+                    <p className="text-sm text-gray-600 mt-2 leading-relaxed">{autor.cv}</p>
+                    <a href={`mailto:${autor.email}`} className="text-xs text-[#00C2C2] hover:underline mt-2 block font-mono">{autor.email}</a>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="bg-gray-50 rounded-xl border border-dashed border-gray-300 p-5 text-center text-sm text-gray-400">
+              ℹ️ Las fotos y CVs completos se incorporarán próximamente.
+            </div>
+          </div>
+        )}
+
+        {/* ── PONENCIA ── */}
+        {tabActiva === 'ponencia' && (
+          <div className="space-y-6">
+            <h2 className="text-xl font-bold text-[#003366]">Ponencia</h2>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+              <div className="border-b border-gray-100 pb-4">
+                <p className="text-xs font-mono text-[#00C2C2] uppercase tracking-widest mb-1">Congreso de Habla Hispana · La Plata · Octubre 2026</p>
+                <h3 className="text-lg font-bold text-[#003366] leading-snug">
+                  NotificAR Clara: inteligencia artificial para la traducción de notificaciones judiciales a lenguaje claro en la Provincia de Buenos Aires
+                </h3>
+                <p className="text-sm text-gray-500 mt-1">Enzo Fontana · Laura Bulesevich · Red Marea D+I</p>
+              </div>
+              <div>
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-3">Resumen</p>
+                <div className="text-sm text-gray-700 leading-relaxed space-y-3">
+                  {PONENCIA_RESUMEN.split('\n\n').map((párrafo, i) => (
+                    <p key={i}>{párrafo}</p>
+                  ))}
+                </div>
+              </div>
+              <div className="bg-gray-50 rounded-xl border border-dashed border-gray-300 p-5 text-center text-sm text-gray-400">
+                📄 El texto completo de la ponencia se incorporará próximamente.
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── OPERADOR ── */}
+        {tabActiva === 'operador' && (
+          <div className="space-y-5">
+            <h2 className="text-xl font-bold text-[#003366]">Panel del operador judicial</h2>
+            <p className="text-sm text-gray-600">Acceso al sistema de generación de notificaciones en lenguaje claro. Exclusivo para operadores judiciales autorizados.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <a href="/operador" className="bg-[#003366] hover:bg-[#004080] text-white rounded-2xl p-6 shadow-lg transition-colors flex flex-col gap-2">
+                <span className="text-3xl">⚙️</span>
+                <p className="font-bold text-lg">Generar notificación</p>
+                <p className="text-xs text-blue-200">Procesar cédula con IA y generar QR</p>
+              </a>
+              <a href="/operador/mensajes" className="bg-white hover:bg-gray-50 text-[#003366] rounded-2xl p-6 shadow-sm border border-gray-200 transition-colors flex flex-col gap-2">
+                <span className="text-3xl">💬</span>
+                <p className="font-bold text-lg">Mensajes WhatsApp</p>
+                <p className="text-xs text-gray-400">Bandeja de respuestas ciudadanas</p>
+              </a>
+            </div>
+          </div>
+        )}
+
+        {/* ── MANUAL ── */}
+        {tabActiva === 'manual' && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold text-[#003366]">Manual del sistema</h2>
+            <p className="text-sm text-gray-600">Guía de uso completa del panel del operador, preguntas frecuentes e historial de versiones.</p>
+            <a href="/sobre" className="block bg-[#003366] hover:bg-[#004080] text-white rounded-2xl p-6 shadow-lg transition-colors text-center">
+              <span className="text-3xl block mb-2">📖</span>
+              <p className="font-bold text-lg">Abrir manual completo</p>
+              <p className="text-xs text-blue-200 mt-1">notificarclara.ar/sobre</p>
+            </a>
+          </div>
+        )}
+
+        {/* ── ESTADÍSTICAS ── */}
+        {tabActiva === 'estadisticas' && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold text-[#003366]">Estadísticas del sistema</h2>
+            <p className="text-sm text-gray-600">Panel de actividad en tiempo real: notificaciones generadas, escaneos QR, geolocalización, consumo de IA.</p>
+            <a href="/admin/estadisticas" className="block bg-[#003366] hover:bg-[#004080] text-white rounded-2xl p-6 shadow-lg transition-colors text-center">
+              <span className="text-3xl block mb-2">📊</span>
+              <p className="font-bold text-lg">Abrir panel de estadísticas</p>
+              <p className="text-xs text-blue-200 mt-1">notificarclara.ar/admin/estadisticas</p>
+            </a>
+          </div>
+        )}
+
+      </main>
+
+      {/* ── Footer ── */}
+      <footer className="bg-[#003366] text-blue-200 text-xs text-center py-4 px-4 mt-8">
+        <p className="font-mono uppercase tracking-widest mb-1">Red Marea D+I · Derecho e innovación en red</p>
+        <p>Enzo Fontana · <a href="mailto:dr.fontana@gmail.com" className="hover:text-white underline">dr.fontana@gmail.com</a> &nbsp;·&nbsp; Laura Bulesevich · <a href="mailto:bulesevichlaura@gmail.com" className="hover:text-white underline">bulesevichlaura@gmail.com</a></p>
+      </footer>
+
     </div>
   )
 }
