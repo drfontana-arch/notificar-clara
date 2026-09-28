@@ -2,7 +2,54 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Variables de marca Red Marea D+I ── */
+:root {
+  --color-ocean:   #003366;
+  --color-celeste: #00C2C2;
+  --color-gris:    #666666;
+  --color-arena:   #F5F2ED;
+
+  --font-heading: var(--font-montserrat), 'Montserrat', system-ui, sans-serif;
+  --font-body:    var(--font-inter), 'Inter', system-ui, sans-serif;
+  --font-mono:    var(--font-roboto-mono), 'Roboto Mono', monospace;
+}
+
+/* ── Base global ── */
 body {
   background-color: #f4f6f7;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body);
+  color: #1a1a1a;
 }
+
+/* ── Tipografía Red Marea para la landing ── */
+.rm-heading {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  color: var(--color-ocean);
+}
+
+.rm-body {
+  font-family: var(--font-body);
+  color: var(--color-gris);
+  line-height: 1.7;
+}
+
+.rm-mono {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+}
+
+/* ── Fondo Arena cálida para la landing ── */
+.rm-bg {
+  background-color: var(--color-arena);
+}
+
+/* ── Divisores en Celeste Océano ── */
+.rm-divider {
+  border-color: var(--color-celeste);
+}
+
+/* ── Scrollbar invisible en nav de tabs ── */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
