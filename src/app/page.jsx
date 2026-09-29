@@ -29,32 +29,51 @@ const CLARA_INTRO = [
   },
   {
     icono: '🔬',
-    texto: 'NotificAR Clara es un prototipo piloto desarrollado por Red Marea D+I para el Congreso de Habla Hispana de La Plata 2026. Está construido con tecnología 100% disponible hoy, sin necesidad de grandes inversiones de infraestructura, y es adaptable a cualquier fuero o jurisdicción.',
+    texto: 'NotificAR Clara es un prototipo piloto desarrollado por Red Marea D+I, presentado en la III Convención RPLCyA (Red Panamericana de Lenguaje Claro y Acceso a la Justicia) en La Plata, octubre 2026. Está construido con tecnología 100% disponible hoy, sin necesidad de grandes inversiones de infraestructura, y es adaptable a cualquier fuero o jurisdicción.',
   },
 ]
 
 const AUTORES = [
   {
+    nombre: 'Laura A. Bulesevich',
+    email: 'bulesevichlaura@gmail.com',
+    foto: null,
+    cargo: 'Jueza de la Cámara de Apelaciones Civil y Comercial de Necochea',
+    cv: [
+      'Integrante del Cuerpo Académico del Fuero Civil y Comercial del Consejo de la Magistratura de la Provincia de Buenos Aires.',
+      'Abogada egresada de la UBA con medalla de oro, distinguida con Premio CSJN.',
+      'Especialista en Derecho Penal — UBA (Director: Dr. David Baigún).',
+      'Diplomada en Derechos Económicos, Sociales, Culturales y Ambientales — UBA / CIDH / CIADH (nov. 2020).',
+      'Diplomada en Familias y Género — Universidad Nacional del Chaco Austral (mar. 2022).',
+      'Diplomada en Argumentación Jurídica y Litigio Judicial — Universidad de San Isidro.',
+    ],
+  },
+  {
     nombre: 'Enzo Fontana',
     email: 'dr.fontana@gmail.com',
     foto: null,
-    cv: 'Abogado. Integrante de Red Marea D+I. Especialista en derecho e innovación tecnológica.',
-  },
-  {
-    nombre: 'Laura Bulesevich',
-    email: 'bulesevichlaura@gmail.com',
-    foto: null,
-    cv: 'Abogada. Integrante de Red Marea D+I.',
+    cargo: 'Secretario de la Unidad Funcional de Defensa Penal N° 6 — Departamento Judicial de Necochea',
+    cv: [
+      'Ministerio Público de la Provincia de Buenos Aires (desde 2015).',
+      'Abogado egresado de la Universidad Nacional de Mar del Plata (2003).',
+      'Mediador (Programa de Formación de Mediadores de la UNLZ y de la Fundación CIJUSO).',
+      'Ex docente titular de Abordaje de Conflictos y Derechos Humanos y Ética Profesional, Escuela de Policía Juan Vucetich, sede Necochea.',
+      'Diplomado Iberoamericano en Innovación y Liderazgo Judicial — Universidad Champagnat.',
+    ],
   },
 ]
 
-const PONENCIA_RESUMEN = `NotificAR Clara propone integrar inteligencia artificial al proceso de notificación judicial en la Provincia de Buenos Aires, con el objetivo de garantizar el acceso efectivo a la justicia de personas en condición de vulnerabilidad.
+const PONENCIA_RESUMEN = `Ser notificado de un acto judicial es, en teoría, el punto de partida del ejercicio de los derechos procesales. Sin embargo, en la práctica, es con frecuencia el punto donde ese ejercicio se detiene. El lenguaje técnico-jurídico que caracteriza a las cédulas, citaciones y notificaciones electrónicas resulta opaco para la gran mayoría de sus destinatarios.
 
-El sistema parte de una premisa simple: el derecho a ser notificado no se agota en la entrega formal del papel. Implica también el derecho a comprender qué dice ese papel. Sin comprensión no hay ejercicio efectivo del derecho de defensa, no hay acceso real a la justicia.
+Las consecuencias de esa incomprensión son concretas: inasistencias a audiencias, rebeldías declaradas, plazos procesales vencidos, privaciones de libertad evitables, resoluciones consentidas y, en resumen, derechos no ejercidos o vulnerados. La barrera comunicacional no es un problema periférico al sistema judicial sino que es uno de sus costos invisibles más significativos.
 
-La propuesta combina: (1) procesamiento de lenguaje natural mediante IA (Claude Haiku 4.5, Anthropic) para traducir el lenguaje jurídico a lenguaje claro; (2) generación automática de un código QR por cada notificación; (3) una página web ciudadana accesible desde el celular que incluye explicación adaptada, guía de acciones, contacto directo con el órgano emisor y ajustes razonables para personas con discapacidad; y (4) un canal de WhatsApp para consultas de los ciudadanos con derivación automática al área responsable.
+NotificAR Clara es un sistema de mediación comunicacional y servicios diseñado para dar respuesta tecnológica a ese problema. Su propósito central es incorporar, en las notificaciones y citaciones judiciales, una capa de comprensión accesible desde el teléfono celular de cualquier persona, sin modificar los documentos originales ni los sistemas informáticos en uso.
 
-El sistema está diseñado conforme a las Reglas de Brasilia (reglas 58 a 61), la Ley Provincial 15.184 y la Resolución SC 1131/26 de la SCBA, y puede ser implementado con tecnología disponible en la actualidad, sin requerir modificaciones legislativas previas.`
+La propuesta se organiza en cuatro ejes: (1) el diagnóstico de la notificación como acto de comunicación que falla sistemáticamente; (2) el marco normativo — Reglas de Brasilia (58 a 63), CDPD, CDN, Convención Interamericana sobre Personas Mayores y Res. SCBA 1131/26; (3) la arquitectura y funcionamiento del sistema; y (4) la viabilidad, impacto esperado y condiciones de escalabilidad.
+
+El sistema opera mediante un código QR que se añade al documento judicial. Al escanearlo, el destinatario accede a una asistente virtual de video generada con IA que explica su función y brinda comunicación en lenguaje claro. Incluye triaje automatizado editable, formulación de preguntas sobre el acto notificado y vías de contacto directo con el órgano emisor. Módulos diferenciados de ajustes razonables contemplan perfiles para personas con discapacidad, adultos mayores y niñas, niños y adolescentes.
+
+El resultado principal es un prototipo operativo disponible para demostración. Los hallazgos confirman que la implementación no requiere gran inversión en infraestructura y puede avanzar órgano por órgano sobre la infraestructura digital ya existente. NotificAR Clara propone que el rigor técnico del documento y la explicación comprensible para quien lo recibe puedan coexistir en el mismo soporte.`
 
 // ── Isologo Red Marea D+I (SVG inline) ───────────────────
 function IsologoRedMarea({ color = '#ffffff', size = 32 }) {
@@ -92,10 +111,10 @@ export default function LandingPage() {
           </div>
           <div className="text-right hidden sm:block">
             <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: '#93c5fd', letterSpacing: '0.06em' }} className="uppercase">
-              Congreso de Habla Hispana
+              III Convención RPLCyA
             </p>
             <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.65rem', color: '#93c5fd', letterSpacing: '0.06em' }} className="uppercase">
-              La Plata · Octubre 2026
+              La Plata · 1 oct. 2026
             </p>
           </div>
         </div>
@@ -131,18 +150,65 @@ export default function LandingPage() {
         {tabActiva === 'inicio' && (
           <div className="space-y-8">
 
-            {/* Hero */}
-            <div className="text-center py-4">
-              <p style={{ fontFamily: 'var(--font-mono)', color: '#00C2C2', fontSize: '0.7rem', letterSpacing: '0.12em' }} className="uppercase mb-3">
-                VERSIÓN DIVULGACIÓN · Piloto 2026
-              </p>
-              <h1 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1.9rem', color: '#003366', lineHeight: 1.2 }} className="mb-3">
-                Notificaciones judiciales<br/>en lenguaje claro
-              </h1>
-              <div style={{ width: 48, height: 3, backgroundColor: '#00C2C2', margin: '0 auto 16px' }} />
-              <p style={{ fontFamily: 'var(--font-body)', color: '#666666', fontSize: '0.95rem', maxWidth: 520, margin: '0 auto', lineHeight: 1.7 }}>
-                Un sistema de inteligencia artificial para garantizar el acceso efectivo a la justicia en la Provincia de Buenos Aires.
-              </p>
+            {/* ── Portada evento (inspirada en flyer RPLCyA) ── */}
+            <div className="rounded-2xl overflow-hidden shadow-lg" style={{ backgroundColor: '#003366' }}>
+
+              {/* Banda superior — evento */}
+              <div className="px-6 pt-6 pb-4 border-b" style={{ borderBottomColor: '#00446a' }}>
+                <div className="flex items-start justify-between gap-4 flex-wrap">
+                  <div>
+                    <p style={{ fontFamily: 'var(--font-mono)', color: '#00C2C2', fontSize: '0.62rem', letterSpacing: '0.14em' }} className="uppercase mb-1">
+                      III Convención RPLCyA
+                    </p>
+                    <p style={{ fontFamily: 'var(--font-body)', color: '#93c5fd', fontSize: '0.75rem', lineHeight: 1.4 }}>
+                      Red Panamericana de Lenguaje Claro y Acceso a la Justicia
+                    </p>
+                  </div>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', backgroundColor: '#00C2C2', color: '#003366', fontWeight: 700, letterSpacing: '0.06em', padding: '4px 10px', borderRadius: 4 }}>
+                    MESA 4.2
+                  </span>
+                </div>
+              </div>
+
+              {/* Título de la mesa */}
+              <div className="px-6 py-5 border-b" style={{ borderBottomColor: '#00446a' }}>
+                <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1.15rem', color: '#ffffff', lineHeight: 1.35 }}>
+                  Lingüística e inteligencia artificial: asistentes para una comunicación clara
+                </p>
+              </div>
+
+              {/* Datos logísticos */}
+              <div className="px-6 py-4 flex flex-wrap gap-x-6 gap-y-2 border-b" style={{ borderBottomColor: '#00446a' }}>
+                {[
+                  { icon: '📅', text: 'Miércoles 1 de octubre' },
+                  { icon: '🕐', text: '12:20 – 13:05 h' },
+                  { icon: '📍', text: 'Casa de Justicia · Sala de Audiencias' },
+                ].map((d, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <span style={{ fontSize: '0.85rem' }}>{d.icon}</span>
+                    <span style={{ fontFamily: 'var(--font-body)', color: '#93c5fd', fontSize: '0.78rem' }}>{d.text}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Presentación de NotificAR Clara */}
+              <div className="px-6 py-6">
+                <p style={{ fontFamily: 'var(--font-mono)', color: '#00C2C2', fontSize: '0.6rem', letterSpacing: '0.16em' }} className="uppercase mb-3">
+                  Te invitamos a la presentación de
+                </p>
+                <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '2rem', color: '#ffffff', lineHeight: 1, marginBottom: 6 }}>
+                  Notific<span style={{ color: '#00C2C2' }}>AR</span> Clara
+                  <span style={{ color: '#00C2C2', marginLeft: 6, fontSize: '1.4rem' }}>—</span>
+                </p>
+                <div style={{ width: 48, height: 3, backgroundColor: '#00C2C2', marginBottom: 16 }} />
+                <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, color: '#ffffff', fontSize: '0.95rem', marginBottom: 4 }}>
+                  Laura Bulesevich y Enzo Fontana
+                </p>
+                <p style={{ fontFamily: 'var(--font-body)', color: '#93c5fd', fontSize: '0.8rem', fontStyle: 'italic' }}>
+                  Poder Judicial de la Provincia de Buenos Aires (Argentina)
+                </p>
+              </div>
+
             </div>
 
             {/* Clara presenta */}
@@ -223,7 +289,7 @@ export default function LandingPage() {
 
             <div className="bg-white rounded-xl p-5 shadow-sm border-l-4" style={{ borderLeftColor: '#00C2C2' }}>
               <p style={{ fontFamily: 'var(--font-body)', color: '#666', fontSize: '0.88rem', lineHeight: 1.7 }}>
-                Ponencia presentada en el <strong style={{ color: '#003366' }}>Congreso de Habla Hispana · La Plata, octubre 2026</strong>, en el marco de <strong style={{ color: '#003366' }}>Red Marea D+I</strong> — colectivo de colaboración intelectual que intersecciona derecho e innovación. Tagline: <em>"Derecho e innovación en red"</em>.
+                Ponencia presentada en la <strong style={{ color: '#003366' }}>III Convención RPLCyA — Red Panamericana de Lenguaje Claro y Acceso a la Justicia · La Plata, 1 de octubre de 2026</strong>, en el marco de <strong style={{ color: '#003366' }}>Red Marea D+I</strong> — colectivo de colaboración intelectual que intersecciona derecho e innovación. Tagline: <em>"Derecho e innovación en red"</em>.
               </p>
             </div>
 
@@ -234,21 +300,29 @@ export default function LandingPage() {
                     <img src={autor.foto} alt={autor.nombre} className="w-28 h-28 rounded-full object-cover" style={{ border: '4px solid #003366' }} />
                   ) : (
                     <div className="w-28 h-28 rounded-full flex items-center justify-center text-white text-4xl" style={{ backgroundColor: '#003366', border: '4px solid #00C2C2', fontFamily: 'var(--font-heading)', fontWeight: 700 }}>
-                      {autor.nombre.charAt(0)}
+                      {autor.nombre.split(' ').map(p => p[0]).join('').slice(0,2)}
                     </div>
                   )}
-                  <div>
-                    <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, color: '#003366', fontSize: '1.1rem' }}>{autor.nombre}</h3>
-                    <div style={{ width: 24, height: 2, backgroundColor: '#00C2C2', margin: '8px auto' }} />
-                    <p style={{ fontFamily: 'var(--font-body)', color: '#666', fontSize: '0.85rem', lineHeight: 1.65 }}>{autor.cv}</p>
-                    <a href={`mailto:${autor.email}`} style={{ fontFamily: 'var(--font-mono)', color: '#00C2C2', fontSize: '0.72rem' }} className="hover:underline mt-2 block">{autor.email}</a>
+                  <div className="text-left w-full">
+                    <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, color: '#003366', fontSize: '1.1rem', textAlign: 'center' }}>{autor.nombre}</h3>
+                    <div style={{ width: 24, height: 2, backgroundColor: '#00C2C2', margin: '8px auto 10px' }} />
+                    <p style={{ fontFamily: 'var(--font-body)', color: '#003366', fontSize: '0.82rem', fontWeight: 600, lineHeight: 1.4, textAlign: 'center', marginBottom: 12 }}>{autor.cargo}</p>
+                    <ul className="space-y-1">
+                      {autor.cv.map((item, i) => (
+                        <li key={i} style={{ fontFamily: 'var(--font-body)', color: '#555', fontSize: '0.8rem', lineHeight: 1.55 }} className="flex gap-2">
+                          <span style={{ color: '#00C2C2', flexShrink: 0 }}>·</span>
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <a href={`mailto:${autor.email}`} style={{ fontFamily: 'var(--font-mono)', color: '#00C2C2', fontSize: '0.72rem' }} className="hover:underline mt-3 block text-center">{autor.email}</a>
                   </div>
                 </div>
               ))}
             </div>
 
             <div className="rounded-xl p-4 text-center text-sm border border-dashed" style={{ borderColor: '#00C2C2', color: '#666', fontFamily: 'var(--font-body)' }}>
-              ℹ️ Fotos y CVs completos se incorporarán próximamente.
+              📷 Fotos de los autores se incorporarán próximamente.
             </div>
           </div>
         )}
@@ -265,10 +339,10 @@ export default function LandingPage() {
             <div className="bg-white rounded-2xl shadow-sm p-6 space-y-5">
               <div className="pb-5 border-b" style={{ borderBottomColor: '#F5F2ED' }}>
                 <p style={{ fontFamily: 'var(--font-mono)', color: '#00C2C2', fontSize: '0.65rem', letterSpacing: '0.1em' }} className="uppercase mb-2">
-                  Congreso de Habla Hispana · La Plata · Octubre 2026
+                  III Convención RPLCyA · Mesa 4.2 · La Plata · 1 oct. 2026
                 </p>
                 <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1.1rem', color: '#003366', lineHeight: 1.35 }}>
-                  NotificAR Clara: inteligencia artificial para la traducción de notificaciones judiciales a lenguaje claro en la Provincia de Buenos Aires
+                  NotificAR Clara: sistema de mediación comunicacional para la comprensión de notificaciones judiciales mediante inteligencia artificial y asistente virtual de video
                 </h3>
                 <p style={{ fontFamily: 'var(--font-body)', color: '#666', fontSize: '0.82rem', marginTop: 8 }}>
                   Enzo Fontana · Laura Bulesevich · Red Marea D+I
@@ -285,7 +359,7 @@ export default function LandingPage() {
               </div>
 
               <div className="rounded-xl p-4 text-center border border-dashed" style={{ borderColor: '#00C2C2', color: '#666', fontFamily: 'var(--font-body)', fontSize: '0.85rem' }}>
-                📄 Texto completo de la ponencia — próximamente.
+                📄 Texto completo de la ponencia — disponible próximamente en formato descargable.
               </div>
             </div>
           </div>
