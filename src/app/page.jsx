@@ -5,9 +5,8 @@ const TABS = [
   { id: 'inicio',       label: '🏠 Inicio' },
   { id: 'autores',      label: '👥 Autores' },
   { id: 'ponencia',     label: '📄 Ponencia' },
-  { id: 'operador',     label: '⚙️ Panel operador' },
+  { id: 'operador',     label: '⚙️ Sistema NotificAR Clara' },
   { id: 'manual',       label: '📖 Manual' },
-  { id: 'estadisticas', label: '📊 Estadísticas' },
 ]
 
 const CLARA_INTRO = [
@@ -180,7 +179,7 @@ export default function LandingPage() {
               {/* Datos logísticos */}
               <div className="px-6 py-4 flex flex-wrap gap-x-6 gap-y-2 border-b" style={{ borderBottomColor: '#00446a' }}>
                 {[
-                  { icon: '📅', text: 'Miércoles 1 de octubre' },
+                  { icon: '📅', text: 'Jueves 1ro de octubre' },
                   { icon: '🕐', text: '12:20 – 13:05 h' },
                   { icon: '📍', text: 'Casa de Justicia · Sala de Audiencias' },
                 ].map((d, i) => (
@@ -268,11 +267,20 @@ export default function LandingPage() {
             {/* Marco normativo — chips */}
             <div className="bg-white rounded-xl p-5 shadow-sm border-t-2" style={{ borderTopColor: '#00C2C2' }}>
               <p style={{ fontFamily: 'var(--font-mono)', color: '#003366', fontSize: '0.65rem', letterSpacing: '0.1em' }} className="uppercase mb-3">Marco normativo</p>
-              <div className="flex flex-wrap gap-2">
-                {['Reglas de Brasilia 58–61', 'Ley PBA 15.184', 'Res. SC 1131/26', 'CDPD', 'Claude Haiku 4.5'].map((n) => (
+              <div className="flex flex-wrap gap-2 mb-3">
+                {['Reglas de Brasilia 58–63', 'Ley PBA 15.184', 'Res. SC 1131/26', 'CDPD', 'CDN', 'Conv. Interamericana Personas Mayores'].map((n) => (
                   <span key={n} style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', backgroundColor: '#F5F2ED', color: '#003366', border: '1px solid #003366' }} className="px-3 py-1 rounded-full">{n}</span>
                 ))}
               </div>
+              <a
+                href="https://www.scba.gov.ar/informacion/guiasbuenaspracticas.asp"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontFamily: 'var(--font-mono)', fontSize: '0.72rem', backgroundColor: '#003366', color: '#fff', border: '1px solid #003366', display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 20, textDecoration: 'none' }}
+                className="hover:opacity-80 transition-opacity"
+              >
+                📋 Guías de Buenas Prácticas · SCBA →
+              </a>
             </div>
 
           </div>
@@ -288,9 +296,16 @@ export default function LandingPage() {
             </div>
 
             <div className="bg-white rounded-xl p-5 shadow-sm border-l-4" style={{ borderLeftColor: '#00C2C2' }}>
-              <p style={{ fontFamily: 'var(--font-body)', color: '#666', fontSize: '0.88rem', lineHeight: 1.7 }}>
-                Ponencia presentada en la <strong style={{ color: '#003366' }}>III Convención RPLCyA — Red Panamericana de Lenguaje Claro y Acceso a la Justicia · La Plata, 1 de octubre de 2026</strong>, en el marco de <strong style={{ color: '#003366' }}>Red Marea D+I</strong> — colectivo de colaboración intelectual que intersecciona derecho e innovación. Tagline: <em>"Derecho e innovación en red"</em>.
+              <p style={{ fontFamily: 'var(--font-body)', color: '#666', fontSize: '0.88rem', lineHeight: 1.7, marginBottom: 12 }}>
+                Ponencia presentada en la <strong style={{ color: '#003366' }}>III Convención RPLCyA — Red Panamericana de Lenguaje Claro y Acceso a la Justicia · La Plata, 1 de octubre de 2026</strong>, en el marco de <strong style={{ color: '#003366' }}>Red Marea D+I</strong> — Colectivo de colaboración intelectual que intersecciona derecho e innovación.
               </p>
+              <div className="flex items-center gap-3">
+                <IsologoRedMarea color="#003366" size={28} />
+                <div>
+                  <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '0.9rem', color: '#003366' }}>Red Marea D+I</p>
+                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: '#00C2C2', letterSpacing: '0.06em' }}>Derecho e innovación en red. Tecnohumanistas.</p>
+                </div>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -365,27 +380,65 @@ export default function LandingPage() {
           </div>
         )}
 
-        {/* ══ OPERADOR ══ */}
+        {/* ══ SISTEMA NOTIFICAR CLARA ══ */}
         {tabActiva === 'operador' && (
           <div className="space-y-6">
             <div>
-              <p style={{ fontFamily: 'var(--font-mono)', color: '#00C2C2', fontSize: '0.65rem', letterSpacing: '0.12em' }} className="uppercase mb-2">Acceso restringido</p>
-              <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1.5rem', color: '#003366' }}>Panel del operador judicial</h2>
+              <p style={{ fontFamily: 'var(--font-mono)', color: '#00C2C2', fontSize: '0.65rem', letterSpacing: '0.12em' }} className="uppercase mb-2">Sistema</p>
+              <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1.5rem', color: '#003366' }}>NotificAR Clara</h2>
               <div style={{ width: 32, height: 3, backgroundColor: '#00C2C2', marginTop: 8, marginBottom: 16 }} />
-              <p style={{ fontFamily: 'var(--font-body)', color: '#666', fontSize: '0.88rem' }}>Acceso al sistema de generación de notificaciones en lenguaje claro. Exclusivo para operadores judiciales autorizados.</p>
+              <p style={{ fontFamily: 'var(--font-body)', color: '#666', fontSize: '0.88rem', lineHeight: 1.7 }}>
+                Sistema de mediación comunicacional para la comprensión de notificaciones judiciales mediante inteligencia artificial. Procesá una cédula, generá su explicación en lenguaje claro y el código QR para imprimir junto al documento original.
+              </p>
             </div>
+
+            {/* Banner de acceso principal */}
+            <a href="/operador" className="block rounded-2xl overflow-hidden shadow-lg hover:opacity-95 transition-opacity" style={{ backgroundColor: '#003366', borderLeft: '5px solid #00C2C2', textDecoration: 'none' }}>
+              <div className="px-8 py-7 flex items-center justify-between gap-4">
+                <div>
+                  <p style={{ fontFamily: 'var(--font-mono)', color: '#00C2C2', fontSize: '0.62rem', letterSpacing: '0.14em' }} className="uppercase mb-2">Acceso al sistema</p>
+                  <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1.4rem', color: '#fff', lineHeight: 1.2, marginBottom: 6 }}>
+                    Generar notificación en lenguaje claro
+                  </p>
+                  <p style={{ fontFamily: 'var(--font-body)', color: '#93c5fd', fontSize: '0.83rem' }}>
+                    Ingresá el texto de la cédula, Clara lo procesa con IA y genera el QR listo para imprimir.
+                  </p>
+                </div>
+                <span style={{ fontSize: '3rem', flexShrink: 0 }}>⚙️</span>
+              </div>
+            </a>
+
+            {/* Cards secundarias */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <a href="/operador" className="rounded-2xl p-6 shadow-lg transition-opacity hover:opacity-90 flex flex-col gap-3" style={{ backgroundColor: '#003366', borderLeft: '4px solid #00C2C2' }}>
-                <span className="text-3xl">⚙️</span>
-                <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1.05rem', color: '#fff' }}>Generar notificación</p>
-                <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.78rem', color: '#93c5fd' }}>Procesar cédula con IA y generar QR</p>
-              </a>
-              <a href="/operador/mensajes" className="rounded-2xl p-6 shadow-sm transition-opacity hover:opacity-90 flex flex-col gap-3 bg-white" style={{ border: '1px solid #e5e7eb', borderLeft: '4px solid #00C2C2' }}>
+              <a href="/operador/mensajes" className="rounded-2xl p-6 shadow-sm transition-opacity hover:opacity-90 flex flex-col gap-3 bg-white" style={{ border: '1px solid #e5e7eb', borderLeft: '4px solid #00C2C2', textDecoration: 'none' }}>
                 <span className="text-3xl">💬</span>
                 <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1.05rem', color: '#003366' }}>Mensajes WhatsApp</p>
                 <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.78rem', color: '#666' }}>Bandeja de respuestas ciudadanas</p>
               </a>
+              <a href="/admin/estadisticas" className="rounded-2xl p-6 shadow-sm transition-opacity hover:opacity-90 flex flex-col gap-3 bg-white" style={{ border: '1px solid #e5e7eb', borderLeft: '4px solid #00C2C2', textDecoration: 'none' }}>
+                <span className="text-3xl">📊</span>
+                <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1.05rem', color: '#003366' }}>Estadísticas</p>
+                <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.78rem', color: '#666' }}>Actividad y métricas del sistema</p>
+              </a>
             </div>
+
+            {/* Banner de acceso — repetido abajo */}
+            <a href="/operador" className="block rounded-2xl overflow-hidden shadow-md hover:opacity-95 transition-opacity" style={{ backgroundColor: '#F5F2ED', border: '2px solid #003366', textDecoration: 'none' }}>
+              <div className="px-8 py-5 flex items-center justify-between gap-4">
+                <div>
+                  <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1.1rem', color: '#003366' }}>
+                    → Ingresar al panel del operador
+                  </p>
+                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.68rem', color: '#666', letterSpacing: '0.06em', marginTop: 4 }}>
+                    notificarclara.ar/operador
+                  </p>
+                </div>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem', backgroundColor: '#003366', color: '#fff', padding: '8px 18px', borderRadius: 6 }}>
+                  Acceder
+                </span>
+              </div>
+            </a>
+
           </div>
         )}
 
