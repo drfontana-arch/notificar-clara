@@ -77,13 +77,20 @@ El resultado principal es un prototipo operativo disponible para demostración. 
 // ── Isologo Red Marea D+I (SVG inline) ───────────────────
 function IsologoRedMarea({ color = '#ffffff', size = 32 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* Rasgo descendente */}
-      <line x1="20" y1="10" x2="38" y2="72" stroke={color} strokeWidth="3.5" strokeLinecap="round"/>
-      {/* Tres arcos decrecientes */}
-      <path d="M38 30 Q58 30 58 48 Q58 62 44 66" stroke={color} strokeWidth="3.5" strokeLinecap="round" fill="none"/>
-      <path d="M38 42 Q52 42 52 54 Q52 62 44 64" stroke={color} strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-      <path d="M38 54 Q46 54 46 61 Q46 64 44 65" stroke={color} strokeWidth="2" strokeLinecap="round" fill="none"/>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="85 95 145 155"
+      width={size}
+      height={size}
+      fill="none"
+    >
+      <path
+        d="M 95 240 C 98 180, 125 105, 142 105 C 158 105, 145 190, 133 220 C 145 190, 160 145, 175 145 C 190 145, 175 195, 165 224 C 180 190, 205 160, 210 175 C 215 195, 195 220, 200 226 C 205 232, 215 222, 222 208"
+        stroke={color}
+        strokeWidth="5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   )
 }
