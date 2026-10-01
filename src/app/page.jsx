@@ -97,6 +97,7 @@ function IsologoRedMarea({ color = '#ffffff', size = 32 }) {
 
 export default function LandingPage() {
   const [tabActiva, setTabActiva] = useState('inicio')
+  const [subTabPonencia, setSubTabPonencia] = useState('resumen')
 
   return (
     <div className="min-h-screen rm-bg flex flex-col" style={{ fontFamily: 'var(--font-body)' }}>
@@ -243,12 +244,10 @@ export default function LandingPage() {
               <p style={{ fontFamily: 'var(--font-mono)', color: '#666', fontSize: '0.65rem', letterSpacing: '0.1em' }} className="uppercase mb-4">Accesos directos</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {[
-                  { label: 'Panel del operador', desc: 'Generar notificaciones', href: '/operador', primary: true },
-                  { label: 'Mensajes WhatsApp', desc: 'Bandeja de mensajes', href: '/operador/mensajes', primary: false },
-                  { label: 'Estadísticas', desc: 'Actividad del sistema', href: '/admin/estadisticas', primary: false },
+                  { label: 'Sistema NotificAR Clara', desc: 'Generar notificaciones', href: '/operador', primary: true },
                   { label: 'Manual', desc: 'Guía del operador', href: '/sobre', primary: false },
-                  { label: 'Autores', desc: 'Enzo y Laura', onclick: () => setTabActiva('autores'), primary: false },
-                  { label: 'Ponencia', desc: 'Congreso 2026', onclick: () => setTabActiva('ponencia'), primary: false },
+                  { label: 'Autores', desc: 'Red Marea D+I', onclick: () => setTabActiva('autores'), primary: false },
+                  { label: 'Ponencia', desc: 'III Convención RPLCyA', onclick: () => setTabActiva('ponencia'), primary: false },
                 ].map((item, i) => {
                   const cls = item.primary
                     ? 'text-white hover:opacity-90'
@@ -358,32 +357,60 @@ export default function LandingPage() {
               <div style={{ width: 32, height: 3, backgroundColor: '#00C2C2', marginTop: 8 }} />
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm p-6 space-y-5">
-              <div className="pb-5 border-b" style={{ borderBottomColor: '#F5F2ED' }}>
-                <p style={{ fontFamily: 'var(--font-mono)', color: '#00C2C2', fontSize: '0.65rem', letterSpacing: '0.1em' }} className="uppercase mb-2">
-                  III Convención RPLCyA · Mesa 4.2 · La Plata · 1 oct. 2026
-                </p>
-                <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1.1rem', color: '#003366', lineHeight: 1.35 }}>
-                  NotificAR Clara: sistema de mediación comunicacional para la comprensión de notificaciones judiciales mediante inteligencia artificial y asistente virtual de video
-                </h3>
-                <p style={{ fontFamily: 'var(--font-body)', color: '#666', fontSize: '0.82rem', marginTop: 8 }}>
-                  Enzo Fontana · Laura Bulesevich · Red Marea D+I
-                </p>
-              </div>
+            {/* Sub-tabs ponencia */}
+            <div className="flex gap-2 border-b" style={{ borderBottomColor: '#e5e7eb' }}>
+              {[
+                { id: 'resumen', label: 'Resúmen de Ponencia' },
+                { id: 'completa', label: 'Ponencia Completa' },
+              ].map(st => (
+                <button
+                  key={st.id}
+                  onClick={() => setSubTabPonencia(st.id)}
+                  style={{
+                    fontFamily: 'var(--font-heading)',
+                    fontWeight: 600,
+                    fontSize: '0.85rem',
+                    color: subTabPonencia === st.id ? '#003366' : '#999',
+                    borderBottom: subTabPonencia === st.id ? '3px solid #00C2C2' : '3px solid transparent',
+                    padding: '8px 16px',
+                    background: 'none',
+                    border: 'none',
+                    borderBottom: subTabPonencia === st.id ? '3px solid #00C2C2' : '3px solid transparent',
+                    cursor: 'pointer',
+                    transition: 'color 0.15s',
+                  }}
+                >{st.label}</button>
+              ))}
+            </div>
 
-              <div>
-                <p style={{ fontFamily: 'var(--font-mono)', color: '#666', fontSize: '0.65rem', letterSpacing: '0.1em' }} className="uppercase mb-4">Resumen</p>
+            {subTabPonencia === 'resumen' && (
+              <div className="bg-white rounded-2xl shadow-sm p-6 space-y-5">
+                <div className="pb-5 border-b" style={{ borderBottomColor: '#F5F2ED' }}>
+                  <p style={{ fontFamily: 'var(--font-mono)', color: '#00C2C2', fontSize: '0.65rem', letterSpacing: '0.1em' }} className="uppercase mb-2">
+                    III Convención RPLCyA · Mesa 4.2 · La Plata · 1 oct. 2026
+                  </p>
+                  <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1.1rem', color: '#003366', lineHeight: 1.35 }}>
+                    NotificAR Clara: sistema de mediación comunicacional para la comprensión de notificaciones judiciales mediante inteligencia artificial y asistente virtual de video
+                  </h3>
+                  <p style={{ fontFamily: 'var(--font-body)', color: '#666', fontSize: '0.82rem', marginTop: 8 }}>
+                    Enzo Fontana · Laura Bulesevich · Red Marea D+I
+                  </p>
+                </div>
                 <div className="space-y-4">
                   {PONENCIA_RESUMEN.split('\n\n').map((párrafo, i) => (
                     <p key={i} style={{ fontFamily: 'var(--font-body)', color: '#444', fontSize: '0.88rem', lineHeight: 1.8 }}>{párrafo}</p>
                   ))}
                 </div>
               </div>
+            )}
 
-              <div className="rounded-xl p-4 text-center border border-dashed" style={{ borderColor: '#00C2C2', color: '#666', fontFamily: 'var(--font-body)', fontSize: '0.85rem' }}>
-                📄 Texto completo de la ponencia — disponible próximamente en formato descargable.
+            {subTabPonencia === 'completa' && (
+              <div className="bg-white rounded-2xl shadow-sm p-10 flex flex-col items-center justify-center gap-4 text-center" style={{ minHeight: 260, border: '2px dashed #00C2C2' }}>
+                <span style={{ fontSize: '2.5rem' }}>📄</span>
+                <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1.1rem', color: '#003366' }}>Ponencia Completa</p>
+                <p style={{ fontFamily: 'var(--font-body)', color: '#666', fontSize: '0.88rem' }}>Próximamente disponible en formato descargable.</p>
               </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -414,20 +441,6 @@ export default function LandingPage() {
                 <span style={{ fontSize: '3rem', flexShrink: 0 }}>⚙️</span>
               </div>
             </a>
-
-            {/* Cards secundarias */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <a href="/operador/mensajes" className="rounded-2xl p-6 shadow-sm transition-opacity hover:opacity-90 flex flex-col gap-3 bg-white" style={{ border: '1px solid #e5e7eb', borderLeft: '4px solid #00C2C2', textDecoration: 'none' }}>
-                <span className="text-3xl">💬</span>
-                <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1.05rem', color: '#003366' }}>Mensajes WhatsApp</p>
-                <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.78rem', color: '#666' }}>Bandeja de respuestas ciudadanas</p>
-              </a>
-              <a href="/admin/estadisticas" className="rounded-2xl p-6 shadow-sm transition-opacity hover:opacity-90 flex flex-col gap-3 bg-white" style={{ border: '1px solid #e5e7eb', borderLeft: '4px solid #00C2C2', textDecoration: 'none' }}>
-                <span className="text-3xl">📊</span>
-                <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1.05rem', color: '#003366' }}>Estadísticas</p>
-                <p style={{ fontFamily: 'var(--font-body)', fontSize: '0.78rem', color: '#666' }}>Actividad y métricas del sistema</p>
-              </a>
-            </div>
 
             {/* Banner de acceso — repetido abajo */}
             <a href="/operador" className="block rounded-2xl overflow-hidden shadow-md hover:opacity-95 transition-opacity" style={{ backgroundColor: '#F5F2ED', border: '2px solid #003366', textDecoration: 'none' }}>
