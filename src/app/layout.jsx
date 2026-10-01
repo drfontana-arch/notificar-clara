@@ -1,5 +1,6 @@
 import './globals.css'
 import { Montserrat, Inter, Roboto_Mono } from 'next/font/google'
+import { Analytics } from '@vercel/analytics/react'
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -30,7 +31,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="es" className={`${montserrat.variable} ${inter.variable} ${robotoMono.variable}`}>
-      <body>{children}</body>
+      <body>{children}<Analytics /></body>
     </html>
   )
 }
