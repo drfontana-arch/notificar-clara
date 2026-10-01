@@ -2,11 +2,11 @@
 import { useState } from 'react'
 
 const TABS = [
-  { id: 'inicio',       label: '🏠 Inicio' },
-  { id: 'autores',      label: '👥 Autores' },
-  { id: 'ponencia',     label: '📄 Ponencia' },
-  { id: 'operador',     label: '⚙️ Sistema NotificAR Clara' },
-  { id: 'manual',       label: '📖 Manual' },
+  { id: 'inicio',       label: 'Inicio' },
+  { id: 'autores',      label: 'Autores' },
+  { id: 'ponencia',     label: 'Ponencia' },
+  { id: 'operador',     label: 'Sistema NotificAR Clara' },
+  { id: 'manual',       label: 'Manual' },
 ]
 
 const CLARA_INTRO = [
@@ -136,8 +136,8 @@ export default function LandingPage() {
               onClick={() => setTabActiva(tab.id)}
               style={{
                 fontFamily: 'var(--font-heading)',
-                fontWeight: tabActiva === tab.id ? 700 : 600,
-                fontSize: '0.8rem',
+                fontWeight: 700,
+                fontSize: '0.9rem',
                 backgroundColor: tabActiva === tab.id ? '#003366' : 'transparent',
                 color: tabActiva === tab.id ? '#ffffff' : '#666666',
                 borderBottom: tabActiva === tab.id ? '2px solid #00C2C2' : '2px solid transparent',
@@ -302,14 +302,14 @@ export default function LandingPage() {
             </div>
 
             <div className="bg-white rounded-xl p-5 shadow-sm border-l-4" style={{ borderLeftColor: '#00C2C2' }}>
-              <p style={{ fontFamily: 'var(--font-body)', color: '#666', fontSize: '0.88rem', lineHeight: 1.7, marginBottom: 12 }}>
+              <p style={{ fontFamily: 'var(--font-body)', color: '#666', fontSize: '0.94rem', lineHeight: 1.7, marginBottom: 12 }}>
                 Ponencia presentada en la <strong style={{ color: '#003366' }}>III Convención RPLCyA — Red Panamericana de Lenguaje Claro y Acceso a la Justicia · La Plata, 1 de octubre de 2026</strong>, en el marco de <strong style={{ color: '#003366' }}>Red Marea D+I</strong> — Colectivo de colaboración intelectual que intersecciona derecho e innovación.
               </p>
               <div className="flex items-center gap-3">
                 <IsologoRedMarea color="#003366" size={28} />
                 <div>
                   <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '0.9rem', color: '#003366' }}>Red Marea D+I</p>
-                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.62rem', color: '#00C2C2', letterSpacing: '0.06em' }}>Derecho e innovación en red. Tecnohumanistas.</p>
+                  <p style={{ fontFamily: 'var(--font-mono)', fontSize: '0.74rem', color: '#00C2C2', letterSpacing: '0.06em' }}>Derecho e innovación en red. Tecnohumanistas.</p>
                 </div>
               </div>
             </div>
@@ -327,10 +327,10 @@ export default function LandingPage() {
                   <div className="text-left w-full">
                     <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, color: '#003366', fontSize: '1.1rem', textAlign: 'center' }}>{autor.nombre}</h3>
                     <div style={{ width: 24, height: 2, backgroundColor: '#00C2C2', margin: '8px auto 10px' }} />
-                    <p style={{ fontFamily: 'var(--font-body)', color: '#003366', fontSize: '0.82rem', fontWeight: 600, lineHeight: 1.4, textAlign: 'center', marginBottom: 12 }}>{autor.cargo}</p>
+                    <p style={{ fontFamily: 'var(--font-body)', color: '#003366', fontSize: '0.88rem', fontWeight: 600, lineHeight: 1.4, textAlign: 'center', marginBottom: 12 }}>{autor.cargo}</p>
                     <ul className="space-y-1">
                       {autor.cv.map((item, i) => (
-                        <li key={i} style={{ fontFamily: 'var(--font-body)', color: '#555', fontSize: '0.8rem', lineHeight: 1.55 }} className="flex gap-2">
+                        <li key={i} style={{ fontFamily: 'var(--font-body)', color: '#555', fontSize: '0.86rem', lineHeight: 1.55 }} className="flex gap-2">
                           <span style={{ color: '#00C2C2', flexShrink: 0 }}>·</span>
                           <span>{item}</span>
                         </li>
